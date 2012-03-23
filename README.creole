@@ -20,6 +20,6 @@ I have submitted a post to [[http://www.japaneselevelup.com|Japanese Level Up]] 
 
 == Feedback
 
-If there's anything you think would improve these, you can use the [[https://github.com/cayennes/kanji-colorize/issues|issue tracker] or email me at cayennes@gmail.com.
+If there's anything you think would improve these, you can use the [[https://github.com/cayennes/kanji-colorize/issues|issue tracker]] or email me at cayennes@gmail.com.
 
 If you find any errors in image files you download, check to see whether they have been fixed in the KanjiVG data by looking at [[http://kanjivg.tagaini.net/viewer.html|their online kanji viewer]].  If it is correct there, it means that I didn't notice that there was an update; let me know and I'll fix it.  If the error exists there, let the KanjiVG project know using their [[https://github.com/KanjiVG/kanjivg/issues|issue tracker]].
