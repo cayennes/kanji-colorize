@@ -13,7 +13,7 @@ If you just want some colorted diagrams, go to [Downloads](https://github.com/ca
 To add these to a kanji deck:
 
 1. Unzip the downloaded collection and put the contents in your deck's .media folder (which is most likely in your Dropbox/Public/Anki folder if you sync media or next to your deck at [My ]Documents/Anki if you don't.)  If your deck doesn't have a media folder create a directory with the same name as your deck except ending in .media instead of .anki.
-2. Add `<img src={{text:Kanji}}.svg>` to your card template, where Kanji is the name of a field that contains a single kanji character.
+2. Add `<img src={{text:Kanji}}.svg>` to your card template, where Kanji is the name of a field that contains a single kanji character.  Note that `{{text:Kanji}}` and `{{{Kanji}}}` can't both be used in the same template; see [Anki's CardLayout help page](http://ankisrs.net/docs/CardLayout) for more information.
 3. Close and re-open your deck.
 
 Now all kanji cards you have and all the ones you add will get stroke order diagrams without any more work from you.
