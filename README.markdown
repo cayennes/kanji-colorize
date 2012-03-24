@@ -16,7 +16,7 @@ To add these to a kanji deck:
 2. Add `<img src={{{text:Kanji}}}.svg>` to your card template, where Kanji is the name of a field that contains a single kanji character.
 3. If you use anki on multiple devices, you may need to run "Tools >> Advanced >> Check Media Database..." to get them to sync properly. If you want to clear out the unused SVGs, which there will be a ton of, use scan + delete. But use scan if you will be adding any more kanji to your deck, or you'll have to add the SVGs to your media folder again.
 
-I have submitted a post to [Japanese Level Up](http://www.japaneselevelup.com) which will have more tips on using stroke order diagrams in an anki deck, and examples of these diagrams.  I expect it to be available to read within a few days.
+There are examples of the diagrams and more on using stroke order diagrams with anki in [this Japanese Level Up post](http://japaneselevelup.com/2012/03/24/boosting-ankis-power-with-media-enhancements-4-colorful-stroke-order-diagrams/).
 
 ## Feedback
 
