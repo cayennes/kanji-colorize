@@ -12,9 +12,15 @@ If you just want some colorted diagrams, go to [Downloads](https://github.com/ca
 
 To add these to a kanji deck:
 
-1. Unzip the downloaded collection and put the contents in your deck's .media folder (which is most likely in your Dropbox/Public/Anki folder if you sync media or next to your deck at [My ]Documents/Anki)
+1. Unzip the downloaded collection and put the contents in your deck's .media folder (which is most likely in your Dropbox/Public/Anki folder if you sync media or next to your deck at [My ]Documents/Anki if you don't.)  If your deck doesn't have a media folder create a directory with the same name as your deck except ending in .media instead of .anki.
 2. Add `<img src={{{text:Kanji}}}.svg>` to your card template, where Kanji is the name of a field that contains a single kanji character.
-3. If you use anki on multiple devices, you may need to run "Tools >> Advanced >> Check Media Database..." to get them to sync properly. If you want to clear out the unused SVGs, which there will be a ton of, use scan + delete. But use scan if you will be adding any more kanji to your deck, or you'll have to add the SVGs to your media folder again.
+3. Close and re-open your deck.
+
+Now all kanji cards you have and all the ones you add will get stroke order diagrams without any more work from you.
+
+Unless:
+
+* If you aren't going to be adding any more kanji to your deck and you'd like to delete all the extra files, you can run "Tools >> Advanced >> Check Media Database..." and select "scan and delete".  If you do this and want to add more kanji later, you will have to repeat the above steps again.
 
 There are examples of the diagrams and more on using stroke order diagrams with anki in [this Japanese Level Up post](http://japaneselevelup.com/2012/03/24/boosting-ankis-power-with-media-enhancements-4-colorful-stroke-order-diagrams/).
 
