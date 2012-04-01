@@ -24,6 +24,15 @@ Unless:
 
 There are examples of the diagrams and more on using stroke order diagrams with anki in [this Japanese Level Up post](http://japaneselevelup.com/2012/03/24/boosting-ankis-power-with-media-enhancements-4-colorful-stroke-order-diagrams/).
 
+## Known Issues
+
+Distributing zips of files with characters for filenames doesn't work as well as a universal simple method of adding stroke order diagrams to anki decks as I had hoped, for two reasons:
+
+1. Zip doesn't support unicode very well; it doesn't have a way of indicating what character set is used.
+2. Anki support for adding media via the template is somewhat weak, and it's unclear how to get it to reliably sync to other devices.
+
+Rather than trying to refine this method, I believe a better solution would be a shared plugin/addon that adds diagrams to cards instead.  Since anki 2.0 is around the corner I will be writing an addon for that instead of an anki 1.x plugin that would quickly become irrelevant.  Hopefully the current clunky solution is good enough for the short term.
+
 ## Feedback
 
 If there's anything you think would improve these, you can use the [issue tracker](https://github.com/cayennes/kanji-colorize/issues) or email me at cayennes@gmail.com.
