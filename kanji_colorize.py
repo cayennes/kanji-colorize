@@ -60,24 +60,26 @@ import re
 # Utility functions for working with colors
 
 def hsv_to_rgbhexcode(h, s, v):
-    'Convert an h, s, v color into rgb form #000000'
+    """
+Convert an h, s, v color into rgb form #000000
+
+>>> hsv_to_rgbhexcode(0, 0, 0)
+'#000000'
+>>> hsv_to_rgbhexcode(2.0/3, 1, 1)
+'#0000ff'
+>>> hsv_to_rgbhexcode(0.5, 0.95, 0.75)
+'#09bfbf'
+"""
     color = colorsys.hsv_to_rgb(h, s, v)
     return '#%02x%02x%02x' % tuple([i * 255 for i in color])
 
 def color_generator(n):
-<<<<<<< HEAD
-    """Create an iterator that loops through n colors twice (so that they can be used
-for both strokes and stroke numbers) using the mode config variable to 
-determine what colors to produce."""
-    if (mode == "contrast"):
-=======
     """
 Create an iterator that loops through n colors twice (so that they can be
 used for both strokes and stroke numbers) using config["mode"] to
 determine what colors to produce.
 """
     if (config["mode"] == "contrast"):
->>>>>>> ff4b5a4... Put configuration in a config dictionary rather than many globals
         angle = 0.618033988749895 # conjugate of the golden ratio
         for i in 2 * range(n):
             yield hsv_to_rgbhexcode(
@@ -145,7 +147,16 @@ def modify_svg(svg):
 # Functions to work with files and directories
 
 def convert_file_name(filename):
-    "Convert unicode code in filename to actual character"
+    r"""
+Convert unicode code in filename to actual character
+
+>>> convert_file_name('00063.svg')
+u'c.svg'
+>>> convert_file_name('06f22.svg')
+u'\u6f22.svg'
+>>> convert_file_name('05b57-Kaisho.svg')
+u'\u5b57-Kaisho.svg'
+"""
     def hex_to_unicode_char(match_object):
         'local function used for a call to re.sub'
         return unichr(int(match_object.group(0), 16))
