@@ -117,10 +117,10 @@ def convert_file_name(filename):
 
 if (os.path.exists('kanji')):
     src_dir = 'kanji'
-elif (os.path.exists('kanjivg/kanji')):
-    src_dir = 'kanjivg/kanji'
-elif (os.path.exists('../kanjivg/kanji')):
-    src_dir = '../kanjivg/kanji'
+elif (os.path.exists(os.path.join('kanjivg', 'kanji'))):
+    src_dir = os.path.join('kanjivg', 'kanji')
+elif (os.path.exists(os.path.join(os.path.pardir,'kanjivg','kanji'))):
+    src_dir = os.path.join(os.path.pardir,'kanjivg','kanji')
 
 dst_dir = 'kanji-colorize-' + mode
 if not (os.path.exists(dst_dir)):
@@ -130,7 +130,7 @@ if not (os.path.exists(dst_dir)):
 
 for src_filename in os.listdir(src_dir):
     # read original svg
-    with open(src_dir + '/' + src_filename, 'r') as f:
+    with open(os.path.join(src_dir, src_filename), 'r') as f:
         svg = f.read()
     # modify
     svg = color_svg(svg)
@@ -141,5 +141,5 @@ for src_filename in os.listdir(src_dir):
         dst_filename = convert_file_name(src_filename)
     else:
         dst_filename = src_filename
-    with open(dst_dir + '/' + dst_filename, 'w') as f:
+    with open(os.path.join(dst_dir, dst_filename), 'w') as f:
         f.write(svg)
