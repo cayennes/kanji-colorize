@@ -163,7 +163,17 @@ u'\u5b57-Kaisho.svg'
     return re.sub('^[0-9a-fA-F]*', hex_to_unicode_char, filename)
 
 def get_dst_filename(src_filename):
-    if (character_file_names):
+    """
+Return the correct filename, based on config["character_file_names"]
+
+>>> config["character_file_names"] = False
+>>> get_dst_filename('00063.svg')
+'00063.svg'
+>>> config["character_file_names"] = True
+>>> get_dst_filename('00063.svg')
+u'c.svg'
+"""
+    if (config["character_file_names"]):
         return convert_file_name(src_filename)
     else:
         return src_filename
@@ -197,7 +207,7 @@ def convert_all():
         svg = modify_svg(svg)
         dst_file_path = os.path.join(
             dst_dir, get_dst_filename(src_filename))
-        with open(dst_file_path), 'w') as f:
+        with open(dst_file_path, 'w') as f:
             f.write(svg)
 
 if __name__ == "__main__":
