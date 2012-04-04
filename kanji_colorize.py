@@ -21,6 +21,7 @@
 
 # CONFIGURATION VARIABLES
 
+config = dict( 
 # mode: 
 # * spectrum: color progresses evenly through the spectrum.  This is
 #             nice for seeing the way the kanji is put together at a
@@ -29,26 +30,26 @@
 #             number goes with which stroke 
 # * contrast: maximizes contrast among any group of consecutive strokes,
 #             by using the golden ratio
-
-mode = "spectrum"
+mode = "spectrum",
 
 # saturation and value, as numbers between 0 and 1
-saturation = 0.95
-value = 0.75
+saturation = 0.95,
+value = 0.75,
 
 # image size in pixels
-image_size = 327
+image_size = 327,
 
 # rename files to use characters rather than codes; set to True or False
-character_file_names = True
+character_file_names = True,
 
+)
 # END OF CONFIGURATION VARIABLES
 
 # make sure config variables are in the right format
-mode = mode.lower()
-saturation = float(saturation)
-value = float(value)
-image_size = int(image_size)
+config["mode"] = config["mode"].lower()
+config["saturation"] = float(config["saturation"])
+config["value"] = float(config["value"])
+config["image_size"] = int(config["image_size"])
 
 # begin script
 
@@ -64,16 +65,27 @@ def hsv_to_rgbhexcode(h, s, v):
     return '#%02x%02x%02x' % tuple([i * 255 for i in color])
 
 def color_generator(n):
+<<<<<<< HEAD
     """Create an iterator that loops through n colors twice (so that they can be used
 for both strokes and stroke numbers) using the mode config variable to 
 determine what colors to produce."""
     if (mode == "contrast"):
+=======
+    """
+Create an iterator that loops through n colors twice (so that they can be
+used for both strokes and stroke numbers) using config["mode"] to
+determine what colors to produce.
+"""
+    if (config["mode"] == "contrast"):
+>>>>>>> ff4b5a4... Put configuration in a config dictionary rather than many globals
         angle = 0.618033988749895 # conjugate of the golden ratio
         for i in 2 * range(n):
-            yield hsv_to_rgbhexcode(i * angle, saturation, value)
+            yield hsv_to_rgbhexcode(
+                i * angle, config["saturation"], config["value"])
     else: # spectrum is default
         for i in 2 * range(n):
-            yield hsv_to_rgbhexcode(float(i)/n, saturation, value)
+            yield hsv_to_rgbhexcode(
+                float(i)/n, config["saturation"], config["value"])
 
 # Utility functions for working with SVG text
 
@@ -84,7 +96,7 @@ def stroke_count(svg):
 # Modify SVG text
 
 def color_svg(svg):
-    "Color the svg according to the mode config variable"
+    """Color the svg according to config["mode"]"""
     color_iterator = color_generator(stroke_count(svg))
     def color_match(match_object):
         return (
@@ -95,9 +107,12 @@ def color_svg(svg):
     return re.sub('<text ', color_match, svg)
 
 def resize_svg(svg):
-    "Resize the svg according to the image_size config variable"
-    ratio = `float(image_size) / 109`
-    svg = svg.replace('109" height="109" viewBox="0 0 109 109', '{0}" height = "{0}" viewBox="0 0 {0} {0}'.format(`image_size`))
+    """Resize the svg according to config["image_size"]"""
+    ratio = `float(config["image_size"]) / 109`
+    svg = svg.replace(
+        '109" height="109" viewBox="0 0 109 109', 
+        '{0}" height = "{0}" viewBox="0 0 {0} {0}'.format(
+            `config["image_size"]`))
     svg = re.sub(
         '(<g id="kvg:Stroke.*?)(>)', 
         r'\1 transform="scale(' + ratio + ',' + ratio + r')"\2', 
@@ -109,10 +124,10 @@ def comment_copyright(svg):
     note = """This file has been modified from the original version by the kanji_colorize.py
 script (available at http://github.com/cayennes/kanji-colorize) with these 
 settings: 
-    mode: """ + mode + """
-    saturation: """ + `saturation` + """
-    value: """ + `value` + """
-    image_size: """ + `image_size` + """
+    mode: """ + config["mode"] + """
+    saturation: """ + `config["saturation"]` + """
+    value: """ + `config["value"]` + """
+    image_size: """ + `config["image_size"]` + """
 It remains under a Creative Commons-Attribution-Share Alike 3.0 License.
 
 The original SVG has the following copyright:
@@ -153,7 +168,7 @@ def get_src_dir():
             return dir
 
 def get_dst_dir():
-    return 'kanji-colorize-' + mode
+    return 'kanji-colorize-' + config["mode"]
 
 def setup_dst_dir():
     dst_dir = get_dst_dir()
