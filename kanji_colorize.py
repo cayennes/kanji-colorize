@@ -76,8 +76,15 @@ Convert an h, s, v color into rgb form #000000
 def color_generator(n):
     """
 Create an iterator that loops through n colors twice (so that they can be
-used for both strokes and stroke numbers) using config["mode"] to
-determine what colors to produce.
+used for both strokes and stroke numbers) using mode, saturation, and
+value in the config dictionary to determine what colors to produce.
+
+>>> config.update({'mode': 'contrast', 'saturation': 1, 'value':1})
+>>> [color for color in color_generator(3)]
+['#ff0000', '#004aff', '#94ff00', '#ff0000', '#004aff', '#94ff00']
+>>> config.update({'mode': 'spectrum', 'saturation': 0.95, 'value':0.75})
+>>> [color for color in color_generator(2)]
+['#bf0909', '#09bfbf', '#bf0909', '#09bfbf']
 """
     if (config["mode"] == "contrast"):
         angle = 0.618033988749895 # conjugate of the golden ratio
