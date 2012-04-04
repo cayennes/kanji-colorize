@@ -1,6 +1,6 @@
 #! /usr/bin/python
 
-# kanji-colorize.py processes KanjiVG data into colored stroke order diagrams
+# kanji_colorize.py processes KanjiVG data into colored stroke order diagrams
 # Copyright 2012 Cayenne Boyer
 #
 # This program is free software: you can redistribute it and/or modify
@@ -54,7 +54,7 @@ import colorsys
 import re
 
 def stroke_count(svg):
-    'Return the number of strokes in the svg, based on occurences of "<path "'
+    '''Return the number of strokes in the svg, based on occurences of "<path "'''
     return len(re.findall('<path ', svg))
 
 def hsv_to_rgbhexcode(h, s, v):
@@ -91,7 +91,7 @@ def resize_svg(svg):
 
 def comment_copyright(svg):
     "Add a comment about what this script has done to the copyright notice"
-    note = """This file has been modified from the original version by the kanji-colorize 
+    note = """This file has been modified from the original version by the kanji_colorize.py
 script (available at http://github.com/cayennes/kanji-colorize) with these 
 settings: 
     mode: """ + mode + """

@@ -1,6 +1,6 @@
 ## About
 
-kanji-colorize.py is a script for coloring, resizing, and renaming the stroke order diagrams from the [KanjiVG](http://kanjivg.tagaini.net/) project.  I wrote it to create sets that make it possibe to easily add stroke order diagrams to an [anki](http://ankisrs.net/) kanji deck, but they can be used for anything you want some nicely colored stroke order diagrams for.
+`kanji_colorize.py` is a script for coloring, resizing, and renaming the stroke order diagrams from the [KanjiVG](http://kanjivg.tagaini.net/) project.  I wrote it to create sets that make it possibe to easily add stroke order diagrams to an [anki](http://ankisrs.net/) kanji deck, but they can be used for anything you want some nicely colored stroke order diagrams for.
 
 If you'd prefer not to bother running a python script, there are some sets of stroke order diagrams generated with it available for download.
 
@@ -18,8 +18,8 @@ Usage:
 
 1. Make sure you have [python 2.x](http://www.python.org/getit/) installed.  Mac and and most Linux distros come with this included so only Windows users need this step.
 2. [Download KanjiVG svg diagrams](http://kanjivg.tagaini.net/download.html); choose "Download separate".  It also works if you choose to download the [whole project](https://github.com/KanjiVG/kanjivg) for any reason.
-3. Edit the CONFIGURATION VARIABLES section of kanji-colorize.py to your liking; all options are explained in the accompanying comments.
-4. Run `python kanji-colorize.py`in a location that contains the script and the kanji or kanjivg directory you downloaded, or containing the script with kanjivg in the parent directory.
+3. Edit the CONFIGURATION VARIABLES section of `kanji_colorize.py` to your liking; all options are explained in the accompanying comments.
+4. Run `python kanji_colorize.py`in a location that contains the script and the kanji or kanjivg directory you downloaded, or containing the script with kanjivg in the parent directory.
 5. You will find your newly colored diagrams in kanji-colorize-spectrum or kanji-colorize-contrast depending on the setting you used.
 
 ## Using with Anki
