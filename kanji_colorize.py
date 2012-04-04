@@ -1,6 +1,7 @@
 #! /usr/bin/python
 
-# kanji_colorize.py processes KanjiVG data into colored stroke order diagrams
+# kanji_colorize.py makes KanjiVG data into colored stroke order diagrams
+#
 # Copyright 2012 Cayenne Boyer
 #
 # This program is free software: you can redistribute it and/or modify
@@ -21,12 +22,14 @@
 # CONFIGURATION VARIABLES
 
 # mode: 
-# * spectrum: color progresses evenly through the spectrum.  This is nice for
-#             seeing the way the kanji is put together at a glance, but has
-#             the disadvantage of using similar colors for consecutive strokes
-#             which can make it less clear which number goes with which stroke
-# * contrast: maximizes contrast among any group of consecutive strokes, by 
-#             using the golden ratio
+# * spectrum: color progresses evenly through the spectrum.  This is
+#             nice for seeing the way the kanji is put together at a
+#             glance, but has the disadvantage of using similar colors
+#             for consecutive strokes which can make it less clear which
+#             number goes with which stroke 
+# * contrast: maximizes contrast among any group of consecutive strokes,
+#             by using the golden ratio
+
 mode = "spectrum"
 
 # saturation and value, as numbers between 0 and 1
@@ -53,9 +56,7 @@ import os
 import colorsys
 import re
 
-def stroke_count(svg):
-    '''Return the number of strokes in the svg, based on occurences of "<path "'''
-    return len(re.findall('<path ', svg))
+# Utility functions for working with colors
 
 def hsv_to_rgbhexcode(h, s, v):
     'Convert an h, s, v color into rgb form #000000'
@@ -74,11 +75,22 @@ determine what colors to produce."""
         for i in 2 * range(n):
             yield hsv_to_rgbhexcode(float(i)/n, saturation, value)
 
+# Utility functions for working with SVG text
+
+def stroke_count(svg):
+    '''Return the number of strokes in the svg, based on occurences of "<path "'''
+    return len(re.findall('<path ', svg))
+
+# Modify SVG text
+
 def color_svg(svg):
     "Color the svg according to the mode config variable"
     color_iterator = color_generator(stroke_count(svg))
     def color_match(match_object):
-        return match_object.re.pattern + 'style="stroke:' + next(color_iterator) + '" '
+        return (
+            match_object.re.pattern +  
+            'style="stroke:' + 
+            next(color_iterator) + '" ')
     svg = re.sub('<path ', color_match, svg)
     return re.sub('<text ', color_match, svg)
 
@@ -86,7 +98,10 @@ def resize_svg(svg):
     "Resize the svg according to the image_size config variable"
     ratio = `float(image_size) / 109`
     svg = svg.replace('109" height="109" viewBox="0 0 109 109', '{0}" height = "{0}" viewBox="0 0 {0} {0}'.format(`image_size`))
-    svg = re.sub('(<g id="kvg:Stroke.*?)(>)', r'\1 transform="scale(' + ratio + ',' + ratio + r')"\2', svg)
+    svg = re.sub(
+        '(<g id="kvg:Stroke.*?)(>)', 
+        r'\1 transform="scale(' + ratio + ',' + ratio + r')"\2', 
+        svg)
     return svg
 
 def comment_copyright(svg):
@@ -106,6 +121,14 @@ The original SVG has the following copyright:
     place_before = "Copyright (C)"
     return svg.replace(place_before, note + place_before)
 
+def modify_svg(svg):
+    svg = color_svg(svg)
+    svg = resize_svg(svg)
+    svg = comment_copyright(svg)
+    return svg
+
+# Functions to work with files and directories
+
 def convert_file_name(filename):
     "Convert unicode code in filename to actual character"
     def hex_to_unicode_char(match_object):
@@ -113,33 +136,43 @@ def convert_file_name(filename):
         return unichr(int(match_object.group(0), 16))
     return re.sub('^[0-9a-fA-F]*', hex_to_unicode_char, filename)
 
-# Find and set up directories
+def get_dst_filename(src_filename):
+    if (character_file_names):
+        return convert_file_name(src_filename)
+    else:
+        return src_filename
 
-if (os.path.exists('kanji')):
-    src_dir = 'kanji'
-elif (os.path.exists(os.path.join('kanjivg', 'kanji'))):
-    src_dir = os.path.join('kanjivg', 'kanji')
-elif (os.path.exists(os.path.join(os.path.pardir,'kanjivg','kanji'))):
-    src_dir = os.path.join(os.path.pardir,'kanjivg','kanji')
 
-dst_dir = 'kanji-colorize-' + mode
-if not (os.path.exists(dst_dir)):
-    os.mkdir(dst_dir)
-   
+def get_src_dir():
+    possible_dirs = [
+        'kanji', 
+        os.path.join('kanjivg', 'kanji'), 
+        os.path.join(os.path.pardir,'kanjivg','kanji')]
+    for dir in possible_dirs:
+        if (os.path.exists(dir)):
+            return dir
+
+def get_dst_dir():
+    return 'kanji-colorize-' + mode
+
+def setup_dst_dir():
+    dst_dir = get_dst_dir()
+    if not (os.path.exists(dst_dir)):
+        os.mkdir(dst_dir)
+
 # Do conversions
 
-for src_filename in os.listdir(src_dir):
-    # read original svg
-    with open(os.path.join(src_dir, src_filename), 'r') as f:
-        svg = f.read()
-    # modify
-    svg = color_svg(svg)
-    svg = resize_svg(svg)
-    svg = comment_copyright(svg)
-    # write to new svg
-    if (character_file_names):
-        dst_filename = convert_file_name(src_filename)
-    else:
-        dst_filename = src_filename
-    with open(os.path.join(dst_dir, dst_filename), 'w') as f:
-        f.write(svg)
+def convert_all():
+    src_dir, dst_dir = get_src_dir(), get_dst_dir()
+    setup_dst_dir()
+    for src_filename in os.listdir(src_dir):
+        with open(os.path.join(src_dir, src_filename), 'r') as f:
+            svg = f.read()
+        svg = modify_svg(svg)
+        dst_file_path = os.path.join(
+            dst_dir, get_dst_filename(src_filename))
+        with open(dst_file_path), 'w') as f:
+            f.write(svg)
+
+if __name__ == "__main__":
+    convert_all()
