@@ -136,7 +136,20 @@ space.  Not all SVGs include stroke numbers.
     return re.sub('<text ', color_match, svg)
 
 def resize_svg(svg):
-    """Resize the svg according to config["image_size"]"""
+    """
+Resize the svg according to config["image_size"], by changing the 109s
+in the <svg> attributes, and adding a transform scale to the groups
+enclosing the strokes and stroke numbers
+
+>>> config["image_size"] = 100
+>>> svg = '<svg  width="109" height="109" viewBox="0 0 109 109"><!109><g id="kvg:StrokePaths_"><path /></g></svg>'
+>>> resize_svg(svg)
+'<svg  width="100" height = "100" viewBox="0 0 100 100"><!109><g id="kvg:StrokePaths_" transform="scale(0.9174311926605505,0.9174311926605505)"><path /></g></svg>'
+>>> svg = '<svg  width="109" height="109" viewBox="0 0 109 109"><!109><g id="kvg:StrokePaths_"><path /></g><g id="kvg:StrokeNumbers_"><text /></g></svg>'
+>>> config["image_size"] = 327
+>>> resize_svg(svg)
+'<svg  width="327" height = "327" viewBox="0 0 327 327"><!109><g id="kvg:StrokePaths_" transform="scale(3.0,3.0)"><path /></g><g id="kvg:StrokeNumbers_" transform="scale(3.0,3.0)"><text /></g></svg>'
+"""
     ratio = `float(config["image_size"]) / 109`
     svg = svg.replace(
         '109" height="109" viewBox="0 0 109 109', 
