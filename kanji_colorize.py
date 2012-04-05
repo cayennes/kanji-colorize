@@ -99,7 +99,13 @@ value in the config dictionary to determine what colors to produce.
 # Utility functions for working with SVG text
 
 def stroke_count(svg):
-    '''Return the number of strokes in the svg, based on occurences of "<path "'''
+    """
+Return the number of strokes in the svg, based on occurences of "<path "
+
+>>> svg = "<svg><path /><path /><path /></svg>"
+>>> stroke_count(svg)
+3
+"""
     return len(re.findall('<path ', svg))
 
 # Modify SVG text
