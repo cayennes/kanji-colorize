@@ -1,9 +1,10 @@
 *.zip
-/kanji-colorize-*
-/kanjivg
-/KanjiVG
-/kanji
+*.pyc
+kanji-colorize-*
+kanjivg
+kanji
 
+!/test/kanivg
 !/test/kanivg/kanji
 !/test/default_results/kanji-colorize-contrast
 !/test/default_results/kanji-colorize-spectrum
