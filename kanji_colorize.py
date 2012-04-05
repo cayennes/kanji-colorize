@@ -105,7 +105,21 @@ def stroke_count(svg):
 # Modify SVG text
 
 def color_svg(svg):
-    """Color the svg according to config["mode"]"""
+    """
+Color the svg with colors from color_generator, which uses config
+variables.
+
+This adds a style attribute to path (stroke) and text (stroke number)
+elements.  Both of these already have attributes, so we can expect a
+space.  Not all SVGs include stroke numbers.
+
+>>> svg = "<svg><path /><path /><text >1</text><text >2</text></svg>"
+>>> color_svg(svg)
+'<svg><path style="stroke:#bf0909" /><path style="stroke:#09bfbf" /><text style="stroke:#bf0909" >1</text><text style="stroke:#09bfbf" >2</text></svg>'
+>>> svg = "<svg><path /><path /></svg>"
+>>> color_svg(svg)
+'<svg><path style="stroke:#bf0909" /><path style="stroke:#09bfbf" /></svg>'
+"""
     color_iterator = color_generator(stroke_count(svg))
     def color_match(match_object):
         return (
