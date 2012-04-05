@@ -220,6 +220,44 @@ u'c.svg'
 
 
 def get_src_dir():
+    """
+Look in the directories listed in possible_dirs, in order, and use the
+first one that exists.  Returns path in a form appropriate for the
+current operating system.
+
+(this line is for resetting the doctest environment)
+>>> current_directory = os.path.abspath(os.path.curdir)
+
+From a directory containing kanjivg/kanji
+
+>>> os.chdir('test')
+>>> if os.name == 'posix':
+...     get_src_dir() == 'kanjivg/kanji'
+... elif os.name == 'nt':
+...     get_src_dir() == r'kanjvg\\kanji'
+...
+True
+
+Then containing 'kanji'
+
+>>> os.chdir('kanjivg')
+>>> get_src_dir() == 'kanji'
+True
+
+From a sibling directory of kanjivg/kanji
+
+>>> os.chdir(os.path.join(os.path.pardir, 'default_results'))
+>>> if os.name == 'posix':
+...     get_src_dir() == '../kanjivg/kanji'
+... elif os.name == 'nt':
+...     get_src_dir() == r'..\\kanjvg\\kanji'
+...
+True
+
+(done; reseting environment for doctest)
+>>> os.chdir(current_directory)
+
+"""
     possible_dirs = [
         'kanji', 
         os.path.join('kanjivg', 'kanji'), 
@@ -229,6 +267,17 @@ def get_src_dir():
             return dir
 
 def get_dst_dir():
+    """
+returns the destination directory name, which is kanji-colorize-
+followed by the mode.
+
+>>> config["mode"] = "contrast"
+>>> get_dst_dir()
+'kanji-colorize-contrast'
+>>> config["mode"] = "spectrum"
+>>> get_dst_dir()
+'kanji-colorize-spectrum'
+"""
     return 'kanji-colorize-' + config["mode"]
 
 def setup_dst_dir():
