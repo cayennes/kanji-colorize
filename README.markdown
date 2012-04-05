@@ -22,6 +22,10 @@ Usage:
 4. Run `python kanji_colorize.py`in a location that contains the script and the kanji or kanjivg directory you downloaded, or containing the script with kanjivg in the parent directory.
 5. You will find your newly colored diagrams in kanji-colorize-spectrum or kanji-colorize-contrast depending on the setting you used.
 
+If you want to try out your settings without spending the time
+processing the whole kanji collection, run the script from the test
+directory.  It contains a kanji directory with just four files in it.
+
 ## Using with Anki
 
 To add these to a kanji deck:
