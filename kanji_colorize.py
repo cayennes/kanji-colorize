@@ -51,7 +51,9 @@ config["saturation"] = float(config["saturation"])
 config["value"] = float(config["value"])
 config["image_size"] = int(config["image_size"])
 
-# begin script
+# BEGIN SCRIPT
+
+# Things used for running
 
 import os
 import colorsys
@@ -179,6 +181,24 @@ The original SVG has the following copyright:
     return svg.replace(place_before, note + place_before)
 
 def modify_svg(svg):
+    """
+Applies all desired changes to the SVG
+
+>>> import difflib
+>>> original_svg = open(
+...    os.path.join('test', 'kanjivg', 'kanji', '06f22.svg'), 
+...    'r').read()
+>>> desired_svg = open(
+...    os.path.join(
+...        'test', 'default_results', 'kanji-colorize-spectrum', 
+...        u'\u6f22.svg'), 
+...    'r').read()
+>>> for line in difflib.context_diff(
+...        modify_svg(original_svg).splitlines(1), 
+...        desired_svg.splitlines(1)):
+...     print(line)
+...
+"""
     svg = color_svg(svg)
     svg = resize_svg(svg)
     svg = comment_copyright(svg)
