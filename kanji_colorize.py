@@ -164,7 +164,29 @@ enclosing the strokes and stroke numbers
     return svg
 
 def comment_copyright(svg):
-    "Add a comment about what this script has done to the copyright notice"
+    """
+Add a comment about what this script has done to the copyright notice
+
+>>> svg = '''<!--
+... Copyright (C) copyright holder (etc.)
+... -->
+... <svg> <! content> </svg>
+... '''
+
+This contains the notice:
+
+>>> comment_copyright(svg).count('This file has been modified')
+1
+
+And depends on the settings it is run with:
+
+>>> config['mode'] = 'contrast'
+>>> comment_copyright(svg).count('contrast')
+1
+>>> config['mode'] = 'spectrum'
+>>> comment_copyright(svg).count('contrast')
+0
+"""
     note = """This file has been modified from the original version by the kanji_colorize.py
 script (available at http://github.com/cayennes/kanji-colorize) with these 
 settings: 
