@@ -323,6 +323,30 @@ followed by the mode.
     return 'kanji-colorize-' + config["mode"]
 
 def setup_dst_dir():
+    """
+Creates the destination directory if necessary
+
+(Set up the doctest environment)
+>>> current_directory = os.path.abspath(os.path.curdir)
+>>> os.mkdir(os.path.join('test', 'doctest-tmp'))
+>>> os.chdir(os.path.join('test', 'doctest-tmp'))
+
+This creates the directory
+>>> setup_dst_dir()
+>>> os.listdir(os.path.curdir)
+['kanji-colorize-spectrum']
+
+But doesn't do anything or throw an error if it already exists
+>>> setup_dst_dir()
+>>> os.listdir(os.path.curdir)
+['kanji-colorize-spectrum']
+
+(done; reseting environment for other doctests)
+>>> os.rmdir(get_dst_dir())
+>>> os.chdir(os.path.pardir)
+>>> os.rmdir('doctest-tmp')
+>>> os.chdir(current_directory)
+"""
     dst_dir = get_dst_dir()
     if not (os.path.exists(dst_dir)):
         os.mkdir(dst_dir)
