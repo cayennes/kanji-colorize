@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/python2
 
 # kanji_colorize.py makes KanjiVG data into colored stroke order diagrams
 #
