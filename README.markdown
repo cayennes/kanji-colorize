@@ -57,3 +57,9 @@ Rather than trying to refine this method, I believe a better solution would be a
 If there's anything you think would improve these, you can use the [issue tracker](https://github.com/cayennes/kanji-colorize/issues) or email me at cayennes@gmail.com.
 
 If you find any errors in image files you download, check to see whether they have been fixed in the KanjiVG data by looking at [their online kanji viewer](http://kanjivg.tagaini.net/viewer.html).  If it is correct there, it means that I didn't notice that there was an update; let me know and I'll fix it.  If the error exists there, let the KanjiVG project know using their [issue tracker](https://github.com/KanjiVG/kanjivg/issues).  If you find errors in image files you generated from KanjiVG data and you have the most recent data, it should be reported to KanjiVG.
+
+## Licence
+
+The code is available under the GPL version 3 or later and the SVG
+images are available under Creative Commons Attribution-Share Alike 3.0.
+See file headers and files in `licenses/` for more information.
