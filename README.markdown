@@ -31,24 +31,22 @@ can choose other options such as the saturation and value of the colors.
 
 Usage:
 
-1. Make sure you have [python 2.x](http://www.python.org/getit/)
+1. Make sure you have [python 2.7](http://www.python.org/getit/)
    installed.  Mac and and most Linux distros come with this included so
    only Windows users need this step.
-2. [Download KanjiVG svg diagrams](http://kanjivg.tagaini.net/download.html); 
-   choose "Download separate".  It also works if you choose to download
-   the [whole project](https://github.com/KanjiVG/kanjivg) for any
-   reason.
-3. Edit the CONFIGURATION VARIABLES section of `kanji_colorize.py` to
-   your liking; all options are explained in the accompanying comments.
-4. Run `python kanji_colorize.py`in a location that contains the script
-   and the kanji or kanjivg directory you downloaded, or containing the
-   script with kanjivg in the parent directory.
-5. You will find your newly colored diagrams in kanji-colorize-spectrum
-   or kanji-colorize-contrast depending on the setting you used.
+2. Download the [KanjiVG project](https://github.com/KanjiVG/kanjivg)
+   and put it in the same directory as `kanji_colorize.py`.  You could
+   also just download the svg collection, and indicate the location with
+   the appropriate command line option.
+3. Run `kanji_colorize.py`.  `kanji_colorize.py --help` will list
+   available options so you can customize the results.  If you want to
+   save a set of options, you can create a shell script.
+4. You will find your diagrams in the `colorized-kanji` directory or the
+   output directory you chose.
 
 If you want to try out your settings without spending the time
-processing the whole kanji collection, run the script from the test
-directory.  It contains a kanji directory with just four files in it.
+processing the whole kanji collection, use `test/kanjivg/kanji` for the
+input directory.  It contains just four svgs.
 
 ## Using with Anki
 
