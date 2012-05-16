@@ -60,6 +60,6 @@ If you find any errors in image files you download, check to see whether they ha
 
 ## Licence
 
-The code is available under the GPL version 3 or later and the SVG
+The code is available under the Affero GPL version 3 or later and the SVG
 images are available under Creative Commons Attribution-Share Alike 3.0.
 See file headers and files in `licenses/` for more information.
