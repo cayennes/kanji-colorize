@@ -37,7 +37,8 @@ Usage:
 2. Download the [KanjiVG project](https://github.com/KanjiVG/kanjivg)
    and put it in the same directory as `kanji_colorize.py`.  You could
    also just download the svg collection, and indicate the location with
-   the appropriate command line option.
+   the appropriate command line option.  If you're using a git clone,
+   this is a submodule.
 3. Run `kanji_colorize.py`.  `kanji_colorize.py --help` will list
    available options so you can customize the results.  If you want to
    save a set of options, you can create a shell script.
