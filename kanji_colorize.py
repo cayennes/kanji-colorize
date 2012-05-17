@@ -316,4 +316,4 @@ def convert_all(args):
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    convert_all()
+    convert_all(args)
