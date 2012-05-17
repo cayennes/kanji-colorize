@@ -125,7 +125,6 @@ class KanjiColorizer:
         >>> kc = KanjiColorizer()
         >>> kc.settings.mode
         'spectrum'
-        >>> import sys
         >>> sys.argv = ['this.py', '--mode', 'contrast']
         >>> kc.read_cl_args()
         >>> kc.settings.mode
@@ -158,7 +157,6 @@ class KanjiColorizer:
         >>> kc.write_all()
 
         These should be the correct files:
-        >>> import difflib
         >>> for file in os.listdir(test_output_dir):
         ...     our_svg = open(
         ...         os.path.join(test_output_dir, file), 'r').read()
@@ -171,7 +169,6 @@ class KanjiColorizer:
         ...
 
         Clean up doctest
-        >>> import shutil
         >>> shutil.rmtree(test_output_dir)
 
         """
@@ -190,7 +187,6 @@ class KanjiColorizer:
         """
         Applies all desired changes to the SVG
 
-        >>> import difflib
         >>> kc = KanjiColorizer('')
         >>> original_svg = open(
         ...    os.path.join('test', 'kanjivg', 'kanji', '06f22.svg'), 
@@ -427,3 +423,9 @@ The original SVG has the following copyright:
                 yield self._hsv_to_rgbhexcode(float(i)/n, 
                     self.settings.saturation, self.settings.value)
 
+if __name__ == "__main__":
+    import doctest
+    import sys
+    import difflib
+    import shutil
+    doctest.testmod()
