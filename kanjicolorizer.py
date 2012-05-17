@@ -43,9 +43,8 @@ class KanjiColorizer:
     ...                     '--output', test_output_dir])
     >>> kc = KanjiColorizer(my_args)
 
-    To convert a single svg stored in a string:
-    >>> svg = "[svg text]"
-    >>> colored_svg = kc.modify_svg(svg)
+    To get an svg for a single character
+    >>> colored_svg = kc.get_colored_svg('a')
 
     To create a set of diagrams:
     >>> kc.write_all()
@@ -144,6 +143,25 @@ class KanjiColorizer:
 
         """
         self.settings = self._parser.parse_args(argstring.split())
+
+    def get_colored_svg(self, character):
+        """
+        Returns a string containing a colored stroke order diagram svg
+        for character.
+
+        >>> kc = KanjiColorizer()
+        >>> svg = kc.get_colored_svg('c')
+        >>> svg.splitlines()[0]
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        >>> svg.find('00063')
+        1783
+        >>> svg.find('has been modified')
+        54
+
+        """
+        svg = self._get_original_svg(character)
+        svg = self._modify_svg(svg)
+        return svg
     
     def write_all(self):
         """
@@ -177,13 +195,13 @@ class KanjiColorizer:
             with open(os.path.join(self.settings.source_directory, 
                     src_filename), 'r') as f:
                 svg = f.read()
-            svg = self.modify_svg(svg)
+            svg = self._modify_svg(svg)
             dst_file_path = os.path.join(self.settings.output_directory, 
                 self._get_dst_filename(src_filename))
             with open(dst_file_path, 'w') as f:
                 f.write(svg)
 
-    def modify_svg(self, svg):
+    def _modify_svg(self, svg):
         """
         Applies all desired changes to the SVG
 
@@ -197,7 +215,7 @@ class KanjiColorizer:
         ...        u'\u6f22.svg'), 
         ...    'r').read()
         >>> for line in difflib.context_diff(
-        ...        kc.modify_svg(original_svg).splitlines(1), 
+        ...        kc._modify_svg(original_svg).splitlines(1), 
         ...        desired_svg.splitlines(1)):
         ...     print(line)
         ...
@@ -273,6 +291,34 @@ class KanjiColorizer:
             return self.convert_filename(src_filename)
         else:
             return src_filename
+
+    def _get_original_svg(self, character):
+        """
+        Get the unmodified svg text for given character
+
+        >>> kc = KanjiColorizer()
+        >>> svg = kc._get_original_svg('c')
+        >>> svg.splitlines()[0]
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        >>> svg.find('00063')
+        1418
+
+        """
+        with open(os.path.join(self.settings.source_directory,
+                self._get_character_filename(character))) as f:
+            svg = f.read()
+        return svg
+
+    def _get_character_filename(self, character):
+        """
+        Get the original filename for character
+
+        >>> kc = KanjiColorizer()
+        >>> kc._get_character_filename('c')
+        '00063.svg'
+
+        """
+        return '%05x.svg' % ord(character)
 
     # private methods for modifying svgs
     
