@@ -303,12 +303,39 @@ But doesn't do anything or throw an error if it already exists
 # Do conversions
 
 def convert_all(args):
+    """
+Converts all svgs, and prints them to files in the destination directory
+
+>>> test_input_dir = os.path.join('test', 'kanjivg', 'kanji')
+>>> test_output_dir = os.path.join('test', 'colorized-kanji')
+>>> my_args = parser.parse_args(['--source-directory', test_input_dir,
+...                           '--output', test_output_dir])
+>>> convert_all(my_args)
+
+These should be the correct files:
+>>> import difflib
+>>> for file in os.listdir(test_output_dir):
+...     our_svg = open(
+...         os.path.join(test_output_dir, file), 'r').read()
+...     desired_svg = open(
+...         os.path.join('test', 'default_results', 
+...             'kanji-colorize-spectrum',  file), 'r').read()
+...     for line in difflib.context_diff(our_svg.splitlines(1), 
+...            desired_svg.splitlines(1)):
+...         print(line)
+...
+
+Clean up doctest
+>>> import shutil
+>>> shutil.rmtree(test_output_dir)
+
+"""
     setup_dst_dir(args)
     for src_filename in os.listdir(args.source_directory):
         with open(os.path.join(args.source_directory, src_filename), 
                   'r') as f:
             svg = f.read()
-        svg = modify_svg(svg)
+        svg = modify_svg(args, svg)
         dst_file_path = os.path.join(
             args.output_directory, get_dst_filename(args, src_filename))
         with open(dst_file_path, 'w') as f:
