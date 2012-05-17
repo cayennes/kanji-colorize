@@ -26,321 +26,407 @@ import colorsys
 import re
 import argparse
 
-parser = argparse.ArgumentParser(description='Create a set of colored '
-                                             'stroke order svgs')
-parser.add_argument('--mode', default='spectrum',
+class KanjiColorizer:
+    """
+    Class that creates colored stroke order diagrams out of kanjivg
+    data, and writes them to file.
+
+    Initialize with no arguments to take the command line settings, or
+    an empty string to use default settings
+
+    Settings can set by initializing with a string in the same format as
+    the command line.
+    >>> test_input_dir = os.path.join('test', 'kanjivg', 'kanji')
+    >>> test_output_dir = os.path.join('test', 'colorized-kanji')
+    >>> my_args = ' '.join(['--source-directory', test_input_dir, 
+    ...                     '--output', test_output_dir])
+    >>> kc = KanjiColorizer(my_args)
+
+    To convert a single svg stored in a string:
+    >>> svg = "[svg text]"
+    >>> colored_svg = kc.modify_svg(svg)
+
+    To create a set of diagrams:
+    >>> kc.write_all()
+
+    If you want to convert a filename from hexcode to character form:
+    >>> kc.convert_filename('ac0de.svg')
+    u'\U000ac0de.svg'
+
+    """
+
+    def __init__(self, argstring=''):
+        self._init_parser()
+        self.read_arg_string(argstring)
+    
+    def _init_parser(self):
+        r"""
+        Initializes argparse.ArgumentParser self._parser
+
+        >>> kc = KanjiColorizer()
+        
+        To show that is really is creating it:
+        >>> kc._parser = None
+
+        Then when this method is run:
+        >>> kc._init_parser()
+        >>> type(kc._parser)
+        <class 'argparse.ArgumentParser'>
+
+        >>> kc._parser.get_default('mode')
+        'spectrum'
+
+        """
+        self._parser = argparse.ArgumentParser(description='Create a set of '
+                                             'colored stroke order svgs')
+        self._parser.add_argument('--mode', default='spectrum',
                     choices=['spectrum', 'contrast'],
                     help='spectrum: color progresses evenly through the'
-                    ' spectrum; nice for seeing the way the kanji is '
-                    'put together at a glance, but has the disadvantage'
-                    ' of using similr colors for consecutive strokes '
-                    'which can make it less clear which number goes '
-                    'with which stroke.  contrast: maximizes contrast '
-                    'among any group of consecutive strokes, using the '
-                    'golden ratio; also provides consistency by using '
-                    'the same sequence for every kanji.  (default: '
-                    '%(default)s)')
-parser.add_argument('--saturation', default=0.95, type=float,
+                        ' spectrum; nice for seeing the way the kanji is'
+                        ' put together at a glance, but has the disadvantage'
+                        ' of using similr colors for consecutive strokes '
+                        'which can make it less clear which number goes '
+                        'with which stroke.  contrast: maximizes contrast '
+                        'among any group of consecutive strokes, using the '
+                        'golden ratio; also provides consistency by using '
+                        'the same sequence for every kanji.  (default: '
+                        '%(default)s)')
+        self._parser.add_argument('--saturation', default=0.95, type=float,
                     help='a decimal indicating saturation where 0 is '
-                    'white/gray/black and 1 is completely  colorful '
-                    '(default: %(default)s)')
-parser.add_argument('--value', default=0.75, type=float,
+                        'white/gray/black and 1 is completely  colorful '
+                        '(default: %(default)s)')
+        self._parser.add_argument('--value', default=0.75, type=float,
                     help='a decimal indicating value where 0 is black '
-                    'and 1 is colored or white '
-                    '(default: %(default)s)')
-parser.add_argument('--image-size', default=327, type=int,
+                        'and 1 is colored or white '
+                        '(default: %(default)s)')
+        self._parser.add_argument('--image-size', default=327, type=int,
                     help="image size in pixels; they're square so this "
-                    'will be both height and width'
-                    '(default: %(default)s)')
-parser.add_argument('--filename-mode', default='character',
+                        'will be both height and width'
+                        '(default: %(default)s)')
+        self._parser.add_argument('--filename-mode', default='character',
                     choices=['character', 'code'],
                     help='character: rename the files to use the '
-                    'unicode character as a filename.  code: leave it '
-                    'as the code.  '
-                    '(default: %(default)s)')
-parser.add_argument('-s', '--source-directory', 
+                        'unicode character as a filename.  code: leave it '
+                        'as the code.  '
+                        '(default: %(default)s)')
+        self._parser.add_argument('-s', '--source-directory', 
                     default=os.path.join(os.path.dirname(__file__),
                                          'kanjivg','kanji')),
-parser.add_argument('-o', '--output-directory',
+        self._parser.add_argument('-o', '--output-directory',
                     default='colorized-kanji')
 
-# Utility functions for working with colors
+    # Public methods
 
-def hsv_to_rgbhexcode(h, s, v):
-    """
-Convert an h, s, v color into rgb form #000000
+    def read_cl_args(self):
+        """
+        Sets the settings to what's indicated in command line arguments
 
->>> hsv_to_rgbhexcode(0, 0, 0)
-'#000000'
->>> hsv_to_rgbhexcode(2.0/3, 1, 1)
-'#0000ff'
->>> hsv_to_rgbhexcode(0.5, 0.95, 0.75)
-'#09bfbf'
-"""
-    color = colorsys.hsv_to_rgb(h, s, v)
-    return '#%02x%02x%02x' % tuple([i * 255 for i in color])
+        >>> kc = KanjiColorizer()
+        >>> kc.settings.mode
+        'spectrum'
+        >>> import sys
+        >>> sys.argv = ['this.py', '--mode', 'contrast']
+        >>> kc.read_cl_args()
+        >>> kc.settings.mode
+        'contrast'
 
-def color_generator(args, n):
-    """
-Create an iterator that loops through n colors twice (so that they can be
-used for both strokes and stroke numbers) using mode, saturation, and
-value from the args namespace
+        """
+        self.settings = self._parser.parse_args()
 
->>> my_args = parser.parse_args(
-...            '--mode contrast --saturation 1 --value 1'.split())
->>> [color for color in color_generator(my_args, 3)]
-['#ff0000', '#004aff', '#94ff00', '#ff0000', '#004aff', '#94ff00']
->>> my_args = parser.parse_args(
-...            '--mode spectrum --saturation 0.95 --value 0.75'.split())
->>> [color for color in color_generator(my_args, 2)]
-['#bf0909', '#09bfbf', '#bf0909', '#09bfbf']
-"""
-    if (args.mode == "contrast"):
-        angle = 0.618033988749895 # conjugate of the golden ratio
-        for i in 2 * range(n):
-            yield hsv_to_rgbhexcode(
-                i * angle, args.saturation, args.value)
-    else: # spectrum is default
-        for i in 2 * range(n):
-            yield hsv_to_rgbhexcode(
-                float(i)/n, args.saturation, args.value)
+    def read_arg_string(self, argstring):
+        """
+        >>> kc = KanjiColorizer()
+        >>> kc.settings.mode
+        'spectrum'
+        >>> kc.read_arg_string('--mode contrast')
+        >>> kc.settings.mode
+        'contrast'
 
-# Utility functions for working with SVG text
+        """
+        self.settings = self._parser.parse_args(argstring.split())
+    
+    def write_all(self):
+        """
+        Converts all svgs, and prints them to files in the destination
+        directory
+        
+        >>> test_input_dir = os.path.join('test', 'kanjivg', 'kanji')
+        >>> test_output_dir = os.path.join('test', 'colorized-kanji')
+        >>> kc = KanjiColorizer(' '.join(['--source-directory', 
+        ...     test_input_dir, '--output', test_output_dir]))
+        >>> kc.write_all()
 
-def stroke_count(svg):
-    """
-Return the number of strokes in the svg, based on occurences of "<path "
+        These should be the correct files:
+        >>> import difflib
+        >>> for file in os.listdir(test_output_dir):
+        ...     our_svg = open(
+        ...         os.path.join(test_output_dir, file), 'r').read()
+        ...     desired_svg = open(
+        ...         os.path.join('test', 'default_results', 
+        ...             'kanji-colorize-spectrum',  file), 'r').read()
+        ...     for line in difflib.context_diff(our_svg.splitlines(1), 
+        ...            desired_svg.splitlines(1)):
+        ...         print(line)
+        ...
 
->>> svg = "<svg><path /><path /><path /></svg>"
->>> stroke_count(svg)
-3
-"""
-    return len(re.findall('<path ', svg))
+        Clean up doctest
+        >>> import shutil
+        >>> shutil.rmtree(test_output_dir)
 
-# Modify SVG text
+        """
+        self._setup_dst_dir()
+        for src_filename in os.listdir(self.settings.source_directory):
+            with open(os.path.join(self.settings.source_directory, 
+                    src_filename), 'r') as f:
+                svg = f.read()
+            svg = self.modify_svg(svg)
+            dst_file_path = os.path.join(self.settings.output_directory, 
+                self._get_dst_filename(src_filename))
+            with open(dst_file_path, 'w') as f:
+                f.write(svg)
 
-def color_svg(args, svg):
-    """
-Color the svg with colors from color_generator, which uses configuration
-from the args namespace
+    def modify_svg(self, svg):
+        """
+        Applies all desired changes to the SVG
 
-This adds a style attribute to path (stroke) and text (stroke number)
-elements.  Both of these already have attributes, so we can expect a
-space.  Not all SVGs include stroke numbers.
+        >>> import difflib
+        >>> kc = KanjiColorizer('')
+        >>> original_svg = open(
+        ...    os.path.join('test', 'kanjivg', 'kanji', '06f22.svg'), 
+        ...    'r').read()
+        >>> desired_svg = open(
+        ...    os.path.join(
+        ...        'test', 'default_results', 'kanji-colorize-spectrum', 
+        ...        u'\u6f22.svg'), 
+        ...    'r').read()
+        >>> for line in difflib.context_diff(
+        ...        kc.modify_svg(original_svg).splitlines(1), 
+        ...        desired_svg.splitlines(1)):
+        ...     print(line)
+        ...
+        """
+        svg = self._color_svg(svg)
+        svg = self._resize_svg(svg)
+        svg = self._comment_copyright(svg)
+        return svg
 
->>> svg = "<svg><path /><path /><text >1</text><text >2</text></svg>"
->>> my_args = parser.parse_args(''.split())
->>> color_svg(my_args, svg)
-'<svg><path style="stroke:#bf0909" /><path style="stroke:#09bfbf" /><text style="stroke:#bf0909" >1</text><text style="stroke:#09bfbf" >2</text></svg>'
->>> svg = "<svg><path /><path /></svg>"
->>> color_svg(my_args, svg)
-'<svg><path style="stroke:#bf0909" /><path style="stroke:#09bfbf" /></svg>'
-"""
-    color_iterator = color_generator(args, stroke_count(svg))
-    def color_match(match_object):
-        return (
-            match_object.re.pattern +  
-            'style="stroke:' + 
-            next(color_iterator) + '" ')
-    svg = re.sub('<path ', color_match, svg)
-    return re.sub('<text ', color_match, svg)
+    def convert_filename(self, filename):
+        r"""
+        Convert unicode code in filename to actual character
+        
+        >>> kc = KanjiColorizer('')
+        >>> kc.convert_filename('00063.svg')
+        u'c.svg'
+        >>> kc.convert_filename('06f22.svg')
+        u'\u6f22.svg'
+        >>> kc.convert_filename('05b57-Kaisho.svg')
+        u'\u5b57-Kaisho.svg'
+        """
+        def hex_to_unicode_char(match_object):
+            'local function used for a call to re.sub'
+            return unichr(int(match_object.group(0), 16))
+        return re.sub('^[0-9a-fA-F]*', hex_to_unicode_char, filename)
 
-def resize_svg(args, svg):
-    """
-Resize the svg according to args.image_size, by changing the 109s
-in the <svg> attributes, and adding a transform scale to the groups
-enclosing the strokes and stroke numbers
+    # Private methods for working with files and directories
 
->>> my_args = parser.parse_args('--image-size 100'.split())
->>> svg = '<svg  width="109" height="109" viewBox="0 0 109 109"><!109><g id="kvg:StrokePaths_"><path /></g></svg>'
->>> resize_svg(my_args, svg)
-'<svg  width="100" height = "100" viewBox="0 0 100 100"><!109><g id="kvg:StrokePaths_" transform="scale(0.9174311926605505,0.9174311926605505)"><path /></g></svg>'
->>> svg = '<svg  width="109" height="109" viewBox="0 0 109 109"><!109><g id="kvg:StrokePaths_"><path /></g><g id="kvg:StrokeNumbers_"><text /></g></svg>'
->>> my_args = parser.parse_args('--image-size 327'.split())
->>> resize_svg(my_args, svg)
-'<svg  width="327" height = "327" viewBox="0 0 327 327"><!109><g id="kvg:StrokePaths_" transform="scale(3.0,3.0)"><path /></g><g id="kvg:StrokeNumbers_" transform="scale(3.0,3.0)"><text /></g></svg>'
-"""
-    ratio = `float(args.image_size) / 109`
-    svg = svg.replace(
-        '109" height="109" viewBox="0 0 109 109', 
-        '{0}" height = "{0}" viewBox="0 0 {0} {0}'.format(
-            str(args.image_size)))
-    svg = re.sub(
-        '(<g id="kvg:Stroke.*?)(>)', 
-        r'\1 transform="scale(' + ratio + ',' + ratio + r')"\2', 
-        svg)
-    return svg
+    def _setup_dst_dir(self):
+        """
+        Creates the destination directory args.output_directory if 
+        necessary
 
-def comment_copyright(args, svg):
-    """
-Add a comment about what this script has done to the copyright notice
+        (Set up the doctest environment)
+        >>> current_directory = os.path.abspath(os.path.curdir)
+        >>> os.mkdir(os.path.join('test', 'doctest-tmp'))
+        >>> os.chdir(os.path.join('test', 'doctest-tmp'))
+        >>> kc = KanjiColorizer('')
 
->>> svg = '''<!--
-... Copyright (C) copyright holder (etc.)
-... -->
-... <svg> <! content> </svg>
-... '''
+        This creates the directory
+        >>> kc._setup_dst_dir()
+        >>> os.listdir(os.path.curdir)
+        ['colorized-kanji']
 
-This contains the notice:
+        But doesn't do anything or throw an error if it already exists
+        >>> kc._setup_dst_dir()
+        >>> os.listdir(os.path.curdir)
+        ['colorized-kanji']
 
->>> my_args = parser.parse_args(''.split())
->>> comment_copyright(my_args, svg).count('This file has been modified')
-1
+        (done; reseting environment for other doctests)
+        >>> os.rmdir(kc.settings.output_directory)
+        >>> os.chdir(os.path.pardir)
+        >>> os.rmdir('doctest-tmp')
+        >>> os.chdir(current_directory)
+        """
+        dst_dir = self.settings.output_directory
+        if not (os.path.exists(self.settings.output_directory)):
+            os.mkdir(self.settings.output_directory)
 
-And depends on the settings it is run with:
+    def _get_dst_filename(self, src_filename):
+        """
+        Return the correct filename, based on args.filename-mode
 
->>> my_args = parser.parse_args('--mode contrast'.split())
->>> comment_copyright(my_args, svg).count('contrast')
-1
->>> my_args = parser.parse_args('--mode spectrum'.split())
->>> comment_copyright(my_args, svg).count('contrast')
-0
-"""
-    note = """This file has been modified from the original version by the kanji_colorize.py
+        >>> kc = KanjiColorizer('--filename-mode code')
+        >>> kc._get_dst_filename('00063.svg')
+        '00063.svg'
+        >>> kc = KanjiColorizer('--filename-mode character')
+        >>> kc._get_dst_filename('00063.svg')
+        u'c.svg'
+
+        """
+        if (self.settings.filename_mode == 'character'):
+            return self.convert_filename(src_filename)
+        else:
+            return src_filename
+
+    # private methods for modifying svgs
+    
+    def _color_svg(self, svg):
+        """
+        Color the svg with colors from _color_generator, which uses
+        configuration from settings
+
+        This adds a style attribute to path (stroke) and text (stroke
+        number) elements.  Both of these already have attributes, so we
+        can expect a space.  Not all SVGs include stroke numbers.
+
+        >>> svg = "<svg><path /><path /><text >1</text><text >2</text></svg>"
+        >>> kc = KanjiColorizer('')
+        >>> kc._color_svg(svg)
+        '<svg><path style="stroke:#bf0909" /><path style="stroke:#09bfbf" /><text style="stroke:#bf0909" >1</text><text style="stroke:#09bfbf" >2</text></svg>'
+        >>> svg = "<svg><path /><path /></svg>"
+        >>> kc._color_svg(svg)
+        '<svg><path style="stroke:#bf0909" /><path style="stroke:#09bfbf" /></svg>'
+        """
+        color_iterator = self._color_generator(self._stroke_count(svg))
+        def color_match(match_object):
+            return (
+                match_object.re.pattern +  
+                'style="stroke:' + 
+                next(color_iterator) + '" ')
+        svg = re.sub('<path ', color_match, svg)
+        return re.sub('<text ', color_match, svg)
+
+
+    def _comment_copyright(self, svg):
+        """
+        Add a comment about what this script has done to the copyright notice
+
+        >>> svg = '''<!--
+        ... Copyright (C) copyright holder (etc.)
+        ... -->
+        ... <svg> <! content> </svg>
+        ... '''
+
+        This contains the notice:
+
+        >>> kc = KanjiColorizer('')
+        >>> kc._comment_copyright(svg).count('This file has been modified')
+        1
+
+        And depends on the settings it is run with:
+
+        >>> kc = KanjiColorizer('--mode contrast')
+        >>> kc._comment_copyright(svg).count('contrast')
+        1
+        >>> kc = KanjiColorizer('--mode spectrum')
+        >>> kc._comment_copyright(svg).count('contrast')
+        0
+        """
+        note = """This file has been modified from the original version by the kanji_colorize.py
 script (available at http://github.com/cayennes/kanji-colorize) with these 
 settings: 
-    mode: """ + args.mode + """
-    saturation: """ + str(args.saturation) + """
-    value: """ + str(args.value) + """
-    image_size: """ + str(args.image_size) + """
+    mode: """ + self.settings.mode + """
+    saturation: """ + str(self.settings.saturation) + """
+    value: """ + str(self.settings.value) + """
+    image_size: """ + str(self.settings.image_size) + """
 It remains under a Creative Commons-Attribution-Share Alike 3.0 License.
 
 The original SVG has the following copyright:
 
 """
-    place_before = "Copyright (C)"
-    return svg.replace(place_before, note + place_before)
+        place_before = "Copyright (C)"
+        return svg.replace(place_before, note + place_before)
 
-def modify_svg(args, svg):
-    """
-Applies all desired changes to the SVG
+    def _resize_svg(self, svg):
+        """
+        Resize the svg according to args.image_size, by changing the 109s
+        in the <svg> attributes, and adding a transform scale to the
+        groups enclosing the strokes and stroke numbers
 
->>> import difflib
->>> my_args = parser.parse_args(''.split())
->>> original_svg = open(
-...    os.path.join('test', 'kanjivg', 'kanji', '06f22.svg'), 
-...    'r').read()
->>> desired_svg = open(
-...    os.path.join(
-...        'test', 'default_results', 'kanji-colorize-spectrum', 
-...        u'\u6f22.svg'), 
-...    'r').read()
->>> for line in difflib.context_diff(
-...        modify_svg(my_args, original_svg).splitlines(1), 
-...        desired_svg.splitlines(1)):
-...     print(line)
-...
-"""
-    svg = color_svg(args, svg)
-    svg = resize_svg(args, svg)
-    svg = comment_copyright(args, svg)
-    return svg
+        >>> svg = '<svg  width="109" height="109" viewBox="0 0 109 109"><!109><g id="kvg:StrokePaths_"><path /></g></svg>'
+        >>> kc = KanjiColorizer('--image-size 100')
+        >>> kc._resize_svg(svg)
+        '<svg  width="100" height = "100" viewBox="0 0 100 100"><!109><g id="kvg:StrokePaths_" transform="scale(0.9174311926605505,0.9174311926605505)"><path /></g></svg>'
+        >>> svg = '<svg  width="109" height="109" viewBox="0 0 109 109"><!109><g id="kvg:StrokePaths_"><path /></g><g id="kvg:StrokeNumbers_"><text /></g></svg>'
+        >>> kc = KanjiColorizer('--image-size 327')
+        >>> kc._resize_svg(svg)
+        '<svg  width="327" height = "327" viewBox="0 0 327 327"><!109><g id="kvg:StrokePaths_" transform="scale(3.0,3.0)"><path /></g><g id="kvg:StrokeNumbers_" transform="scale(3.0,3.0)"><text /></g></svg>'
+        """
+        ratio = `float(self.settings.image_size) / 109`
+        svg = svg.replace(
+            '109" height="109" viewBox="0 0 109 109', 
+            '{0}" height = "{0}" viewBox="0 0 {0} {0}'.format(
+                str(self.settings.image_size)))
+        svg = re.sub(
+            '(<g id="kvg:Stroke.*?)(>)', 
+            r'\1 transform="scale(' + ratio + ',' + ratio + r')"\2', 
+            svg)
+        return svg
+    
+    # Private utility methods
 
-# Functions to work with files and directories
+    def _stroke_count(self, svg):
+        """
+        Return the number of strokes in the svg, based on occurences of
+        "<path "
 
-def convert_file_name(filename):
-    r"""
-Convert unicode code in filename to actual character
+        >>> svg = "<svg><path /><path /><path /></svg>"
+        >>> kc = KanjiColorizer('')
+        >>> kc._stroke_count(svg)
+        3
+        """
+        return len(re.findall('<path ', svg))
 
->>> convert_file_name('00063.svg')
-u'c.svg'
->>> convert_file_name('06f22.svg')
-u'\u6f22.svg'
->>> convert_file_name('05b57-Kaisho.svg')
-u'\u5b57-Kaisho.svg'
-"""
-    def hex_to_unicode_char(match_object):
-        'local function used for a call to re.sub'
-        return unichr(int(match_object.group(0), 16))
-    return re.sub('^[0-9a-fA-F]*', hex_to_unicode_char, filename)
+    def _hsv_to_rgbhexcode(self, h, s, v):
+        """
+        Convert an h, s, v color into rgb form #000000
 
-def get_dst_filename(args, src_filename):
-    """
-Return the correct filename, based on args.filename-mode
+        >>> kc = KanjiColorizer('')
+        >>> kc._hsv_to_rgbhexcode(0, 0, 0)
+        '#000000'
+        >>> kc._hsv_to_rgbhexcode(2.0/3, 1, 1)
+        '#0000ff'
+        >>> kc._hsv_to_rgbhexcode(0.5, 0.95, 0.75)
+        '#09bfbf'
+        """
+        color = colorsys.hsv_to_rgb(h, s, v)
+        return '#%02x%02x%02x' % tuple([i * 255 for i in color])
 
->>> my_args = parser.parse_args('--filename-mode code'.split())
->>> get_dst_filename(my_args, '00063.svg')
-'00063.svg'
->>> my_args = parser.parse_args('--filename-mode character'.split())
->>> get_dst_filename(my_args, '00063.svg')
-u'c.svg'
-"""
-    if (args.filename_mode == 'character'):
-        return convert_file_name(src_filename)
-    else:
-        return src_filename
+    def _color_generator(self, n):
+        """
+        Create an iterator that loops through n colors twice (so that
+        they can be used for both strokes and stroke numbers) using
+        mode, saturation, and value from the args namespace
 
-def setup_dst_dir(args):
-    """
-Creates the destination directory args.output_directory if necessary
-
-(Set up the doctest environment)
->>> current_directory = os.path.abspath(os.path.curdir)
->>> os.mkdir(os.path.join('test', 'doctest-tmp'))
->>> os.chdir(os.path.join('test', 'doctest-tmp'))
->>> my_args = parser.parse_args(''.split())
-
-This creates the directory
->>> setup_dst_dir(my_args)
->>> os.listdir(os.path.curdir)
-['colorized-kanji']
-
-But doesn't do anything or throw an error if it already exists
->>> setup_dst_dir(my_args)
->>> os.listdir(os.path.curdir)
-['colorized-kanji']
-
-(done; reseting environment for other doctests)
->>> os.rmdir(my_args.output_directory)
->>> os.chdir(os.path.pardir)
->>> os.rmdir('doctest-tmp')
->>> os.chdir(current_directory)
-"""
-    dst_dir = args.output_directory
-    if not (os.path.exists(dst_dir)):
-        os.mkdir(dst_dir)
-
-# Do conversions
-
-def convert_all(args):
-    """
-Converts all svgs, and prints them to files in the destination directory
-
->>> test_input_dir = os.path.join('test', 'kanjivg', 'kanji')
->>> test_output_dir = os.path.join('test', 'colorized-kanji')
->>> my_args = parser.parse_args(['--source-directory', test_input_dir,
-...                           '--output', test_output_dir])
->>> convert_all(my_args)
-
-These should be the correct files:
->>> import difflib
->>> for file in os.listdir(test_output_dir):
-...     our_svg = open(
-...         os.path.join(test_output_dir, file), 'r').read()
-...     desired_svg = open(
-...         os.path.join('test', 'default_results', 
-...             'kanji-colorize-spectrum',  file), 'r').read()
-...     for line in difflib.context_diff(our_svg.splitlines(1), 
-...            desired_svg.splitlines(1)):
-...         print(line)
-...
-
-Clean up doctest
->>> import shutil
->>> shutil.rmtree(test_output_dir)
-
-"""
-    setup_dst_dir(args)
-    for src_filename in os.listdir(args.source_directory):
-        with open(os.path.join(args.source_directory, src_filename), 
-                  'r') as f:
-            svg = f.read()
-        svg = modify_svg(args, svg)
-        dst_file_path = os.path.join(
-            args.output_directory, get_dst_filename(args, src_filename))
-        with open(dst_file_path, 'w') as f:
-            f.write(svg)
+        >>> my_args = '--mode contrast --saturation 1 --value 1'
+        >>> kc = KanjiColorizer(my_args)
+        >>> [color for color in kc._color_generator(3)]
+        ['#ff0000', '#004aff', '#94ff00', '#ff0000', '#004aff', '#94ff00']
+        >>> my_args = '--mode spectrum --saturation 0.95 --value 0.75'
+        >>> kc = KanjiColorizer(my_args)
+        >>> [color for color in kc._color_generator(2)]
+        ['#bf0909', '#09bfbf', '#bf0909', '#09bfbf']
+        """
+        if (self.settings.mode == "contrast"):
+            angle = 0.618033988749895 # conjugate of the golden ratio
+            for i in 2 * range(n):
+                yield self._hsv_to_rgbhexcode(i * angle, 
+                    self.settings.saturation, self.settings.value)
+        else: # spectrum is default
+            for i in 2 * range(n):
+                yield self._hsv_to_rgbhexcode(float(i)/n, 
+                    self.settings.saturation, self.settings.value)
 
 if __name__ == "__main__":
-    args = parser.parse_args()
-    convert_all(args)
+    kc = KanjiColorizer()
+    kc.read_cl_args()
+    kc.write_all()
