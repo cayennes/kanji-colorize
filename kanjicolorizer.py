@@ -1,6 +1,6 @@
 #! /usr/bin/python2
 
-# kanji_colorize.py makes KanjiVG data into colored stroke order diagrams
+# kanjicolorizer.py makes KanjiVG data into colored stroke order diagrams
 #
 # Copyright 2012 Cayenne Boyer
 #
