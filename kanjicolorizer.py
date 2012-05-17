@@ -1,6 +1,7 @@
 #! /usr/bin/python2
 
-# kanjicolorizer.py makes KanjiVG data into colored stroke order diagrams
+# kanjicolorizer.py is part of kanji-colorize which makes KanjiVG data
+# into colored stroke order diagrams
 #
 # Copyright 2012 Cayenne Boyer
 #
@@ -426,7 +427,3 @@ The original SVG has the following copyright:
                 yield self._hsv_to_rgbhexcode(float(i)/n, 
                     self.settings.saturation, self.settings.value)
 
-if __name__ == "__main__":
-    kc = KanjiColorizer()
-    kc.read_cl_args()
-    kc.write_all()

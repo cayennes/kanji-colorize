@@ -1,6 +1,6 @@
 ## About
 
-`kanjicolorizer.py` is a script for coloring, resizing, and renaming the
+`kanji_colorize.py` is a script for coloring, resizing, and renaming the
 stroke order diagrams from the [KanjiVG](http://kanjivg.tagaini.net/)
 project.  I wrote it to create sets that make it possibe to easily add
 stroke order diagrams to an [anki](http://ankisrs.net/) kanji deck, but
@@ -35,11 +35,11 @@ Usage:
    installed.  Mac and and most Linux distros come with this included so
    only Windows users need this step.
 2. Download the [KanjiVG project](https://github.com/KanjiVG/kanjivg)
-   and put it in the same directory as `kanjicolorizer.py`.  You could
+   and put it in the same directory as `kanji_colorize.py`.  You could
    also just download the svg collection, and indicate the location with
    the appropriate command line option.  If you're using a git clone,
    this is a submodule.
-3. Run `kanjicolorizer.py`.  `kanjicolorizer.py --help` will list
+3. Run `kanji_colorize.py`.  `kanji_colorize.py --help` will list
    available options so you can customize the results.  If you want to
    save a set of options, you can create a shell script.
 4. You will find your diagrams in the `colorized-kanji` directory or the
