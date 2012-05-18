@@ -201,6 +201,18 @@ class KanjiColorizer:
             with open(dst_file_path, 'w') as f:
                 f.write(svg)
 
+    def get_character_filename(self, character):
+        """
+        Get the original filename for character
+
+        >>> kc = KanjiColorizer()
+        >>> kc.get_character_filename('c')
+        '00063.svg'
+
+        """
+        return '%05x.svg' % ord(character)
+
+    
     def _modify_svg(self, svg):
         """
         Applies all desired changes to the SVG
@@ -305,20 +317,9 @@ class KanjiColorizer:
 
         """
         with open(os.path.join(self.settings.source_directory,
-                self._get_character_filename(character))) as f:
+                self.get_character_filename(character))) as f:
             svg = f.read()
         return svg
-
-    def _get_character_filename(self, character):
-        """
-        Get the original filename for character
-
-        >>> kc = KanjiColorizer()
-        >>> kc._get_character_filename('c')
-        '00063.svg'
-
-        """
-        return '%05x.svg' % ord(character)
 
     # private methods for modifying svgs
     
