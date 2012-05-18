@@ -3,9 +3,12 @@
 kanji-colorize-*
 kanjivg
 kanji
+/build
+/dist
+MANIFEST
 
 !/test/kanivg
 !/test/kanivg/kanji
 !/test/default_results/kanji-colorize-contrast
 !/test/default_results/kanji-colorize-spectrum
-!/kanjivg
+!/kanjicolorizer/data/kanjivg

@@ -19,7 +19,7 @@
 # License along with this program.  If not, see
 # <http://www.gnu.org/licenses/>.
 
-from kanjicolorizer import KanjiColorizer
+from kanjicolorizer.colorizer import KanjiColorizer
 
 if __name__ == "__main__":
     kc = KanjiColorizer()

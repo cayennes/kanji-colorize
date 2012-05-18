@@ -111,7 +111,7 @@ class KanjiColorizer:
                         '(default: %(default)s)')
         self._parser.add_argument('-s', '--source-directory', 
                     default=os.path.join(os.path.dirname(__file__),
-                                         'kanjivg','kanji')),
+                                         'data', 'kanjivg','kanji')),
         self._parser.add_argument('-o', '--output-directory',
                     default='colorized-kanji')
 
