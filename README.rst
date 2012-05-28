@@ -29,6 +29,16 @@ necessary to tell which number goes with which stroke. The contrast set
 maximizes the contrast between any set of consecutive strokes.  (This
 uses the golden ratio.  Math is nifty.)
 
+Downloading the Software
+------------------------
+
+If do want the software to generate diagrams to your own specifications,
+there is a package of the software on `KanjiColorizer's page on PyPI
+<http://pypi.python.org/pypi/KanjiColorizer>`_.  You can also clone the
+repository on GitHub; note that you will need to run ``git submodule
+update`` if you do.  Don't download the automatic packages that GitHub
+provides; they won't include the data.
+
 Generating diagrams
 -------------------
 
@@ -41,10 +51,10 @@ Usage:
 1. Make sure you have `python 2.7 <http://www.python.org/getit/>`_
    installed.  Mac and and most Linux distros come with this included so
    only Windows users need this step.
-2. Run ``python kanji_colorize.py``.  ``python kanji_colorize.py 
-   --help`` will list available options so you can customize the 
-   results.  If you want to save a set of options, you can create a 
-   shell script.
+2. Run ``python kanji_colorize.py`` from its directory.
+   ``python kanji_colorize.py --help`` will list available options so you
+   can customize the results.  If you want to save a set of options, you 
+   can create a shell script.
 3. You will find your diagrams in the ``colorized-kanji`` directory or
    the output directory you chose.
 
