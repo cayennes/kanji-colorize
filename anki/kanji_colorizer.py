@@ -35,7 +35,7 @@
 # CONFIGURATION
 
 # Different settings can be used  
-#config = "--mode contrast"
+config = "--mode contrast"
 
 # END CONFIGURATION
 
@@ -47,7 +47,7 @@ import os
 srcFields = ['Kanji']
 dstFields = ['Diagram']
 
-kc = KanjiColorizer()
+kc = KanjiColorizer(config)
 
 def onFocusLost(flag, n, fidx):
     from aqt import mw
