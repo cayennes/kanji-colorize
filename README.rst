@@ -62,8 +62,14 @@ If you want to try out your settings without spending the time
 processing the whole kanji collection, use ``test/kanjivg/kanji`` for the
 input directory.  It contains just four svgs.
 
+If you want to be able to run the script from anywhere, run ``python
+setup.py install``.
+
 Using with Anki
 ---------------
+
+Anki 1.x
+````````
 
 To add these to a kanji deck:
 
@@ -95,6 +101,14 @@ Unless:
 There are examples of the diagrams and more on using stroke order
 diagrams with anki in `this Japanese Level Up post <http://japaneselevelup.com/2012/03/24/boosting-ankis-power-with-media-enhancements-4-colorful-stroke-order-diagrams/>`_.
 
+Anki 2.0 beta
+`````````````
+
+There is an addon for the anki 2.0 beta so you get diagrams
+automatically; it already works and just needs some polish.  See the
+comments on the beginning of the file in the "anki" folder of this
+project for how to use it.
+
 Known Issues
 ------------
 
@@ -110,7 +124,7 @@ anki decks as I had hoped, for two reasons:
 
 Rather than trying to refine this method, I believe a better solution
 would be a shared plugin/addon that adds diagrams to cards instead.
-Since anki 2.0 is around the corner I will be writing an addon for that
+Since anki 2.0 is around the corner I am writing an addon for that
 instead of an anki 1.x plugin that would quickly become irrelevant.
 Hopefully the current clunky solution is good enough for the short term.
 
