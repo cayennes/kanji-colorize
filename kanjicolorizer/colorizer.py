@@ -101,7 +101,7 @@ class KanjiColorizer:
                         '(default: %(default)s)')
         self._parser.add_argument('--image-size', default=327, type=int,
                     help="image size in pixels; they're square so this "
-                        'will be both height and width'
+                        'will be both height and width '
                         '(default: %(default)s)')
         self._parser.add_argument('--filename-mode', default='character',
                     choices=['character', 'code'],
