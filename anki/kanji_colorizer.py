@@ -36,13 +36,40 @@
 # settings, use the "Kanji Colorizer: (re)generate all" option in the
 # tools menu.
 
-# Note: This is a work in progress.  When it is stable I will be
-# uploading it to the anki2 addons page.
-
 # CONFIGURATION
 
-# Different settings can be used  
-config = "--mode contrast"
+# Change the settings by editing the part between quotation marks in
+# each block; leave everything else as it is.
+
+# MODE
+config = "--mode "
+# spectrum: color progresses evenly through the spectrum; nice for
+#           seeing the way the kanji is put together at a glance, but
+#           has the disadvantage of using similar colors for consecutive
+#           strokes which can make it less clear which number goes with
+#           which number goes with which stroke.
+# contrast: maximizes the contrast among any group of consecutive
+#           strokes, using the golden ratio; also provides consistency
+#           by using the same sequence for every kanji
+config += "spectrum"
+
+# SATURATION
+config += " --saturation "
+# --saturation: a decimal indicating saturation where 0 is
+# white/gray/black and 1 is completely colorful
+config += "0.95"
+
+# VALUE
+config += " --value "
+# --value: a decimal indicating value where 0 is black and 1 is colored
+# or white
+config += "0.75"
+
+# IMAGE SIZE
+config += " --image-size "
+# --image-size: image size in pixels; they're square so this will be
+# both height and width
+config += "327"
 
 # END CONFIGURATION
 
