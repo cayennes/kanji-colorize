@@ -39,7 +39,7 @@
 # CONFIGURATION
 
 # Change the settings by editing the part between quotation marks in
-# each block; leave everything else as it is.
+# the last line of each block; leave everything else as it is.
 
 # MODE
 config = "--mode "
