@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: UTF-8 -*-
 
-# kanjicolorizer.py is part of kanji-colorize which makes KanjiVG data
+# colorizer.py is part of kanji-colorize which makes KanjiVG data
 # into colored stroke order diagrams
 #
 # Copyright 2012 Cayenne Boyer
@@ -66,7 +66,7 @@ class KanjiColorizer:
 
         >>> kc = KanjiColorizer()
         
-        To show that is really is creating it:
+        To show that it really is creating it:
         >>> kc._parser = None
 
         Then when this method is run:
@@ -85,7 +85,7 @@ class KanjiColorizer:
                     help='spectrum: color progresses evenly through the'
                         ' spectrum; nice for seeing the way the kanji is'
                         ' put together at a glance, but has the disadvantage'
-                        ' of using similr colors for consecutive strokes '
+                        ' of using similar colors for consecutive strokes '
                         'which can make it less clear which number goes '
                         'with which stroke.  contrast: maximizes contrast '
                         'among any group of consecutive strokes, using the '
