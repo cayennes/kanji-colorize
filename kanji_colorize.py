@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/env python2
 
 # kanjicolorizer.py is part of kanji-colorize which makes KanjiVG data
 # into colored stroke order diagrams
