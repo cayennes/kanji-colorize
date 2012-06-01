@@ -1,4 +1,5 @@
 #!/usr/bin/env python2
+# -*- coding: UTF-8 -*-
 
 # kanjicolorizer.py is part of kanji-colorize which makes KanjiVG data
 # into colored stroke order diagrams
@@ -202,19 +203,19 @@ class KanjiColorizer:
                 f.write(svg)
 
     def get_character_filename(self, character):
-        """
+        u"""
         Get the original filename for character
 
         >>> kc = KanjiColorizer()
-        >>> kc.get_character_filename('c')
-        '00063.svg'
+        >>> kc.get_character_filename(u'漢')
+        '06f22.svg'
 
         """
         return '%05x.svg' % ord(character)
 
     
     def _modify_svg(self, svg):
-        """
+        u"""
         Applies all desired changes to the SVG
 
         >>> kc = KanjiColorizer('')
@@ -224,7 +225,7 @@ class KanjiColorizer:
         >>> desired_svg = open(
         ...    os.path.join(
         ...        'test', 'default_results', 'kanji-colorize-spectrum', 
-        ...        u'\u6f22.svg'), 
+        ...        u'漢.svg'), 
         ...    'r').read()
         >>> for line in difflib.context_diff(
         ...        kc._modify_svg(original_svg).splitlines(1), 
