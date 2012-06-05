@@ -26,7 +26,7 @@ setup(name='KanjiColorizer',
     description='script and module to create colored stroke order '
         'diagrams based on KanjiVG data',
     long_description=open('README.rst').read(),
-    version='0.5.2dev',
+    version='0.6dev',
     author='Cayenne',
     author_email='cayennes@gmail.com',
     url='http://github.com/cayennes/kanji-colorize',
