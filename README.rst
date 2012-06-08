@@ -103,7 +103,6 @@ diagrams with anki in `this Japanese Level Up post <http://japaneselevelup.com/2
 
 Anki 2.0 beta
 `````````````
-
 There is an addon for the anki 2.0 beta so you get diagrams
 automatically; it already works and just needs some polish.  See the
 comments on the beginning of the file in the "anki" folder of this
@@ -122,11 +121,11 @@ anki decks as I had hoped, for two reasons:
    it's unclear how to get it to reliably sync to other devices, though
    I and other users have gotten it to work.
 
-Rather than trying to refine this method, I believe a better solution
-would be a shared plugin/addon that adds diagrams to cards instead.
-Since anki 2.0 is around the corner I am writing an addon for that
-instead of an anki 1.x plugin that would quickly become irrelevant.
-Hopefully the current clunky solution is good enough for the short term.
+But Anki 2.0 is around the corner so I don't think this is a problem
+worth fixing.
+
+If people tell me they have other uses for packaged sets, let me know
+what format would be most helpful.
 
 Feedback
 --------
