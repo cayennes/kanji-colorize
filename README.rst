@@ -108,6 +108,16 @@ automatically; it already works and just needs some polish.  See the
 comments on the beginning of the file in the "anki" folder of this
 project for how to use it.
 
+Using the Package in Python Code
+--------------------------------
+
+The code is designed to be imported and used in python programs, but the
+API *will* be changing.
+
+Documentation can be found in the docstrings.  Though I have to admit
+that I used doctest, which mean writing not-great documentation and
+not-great tests for almost no work.
+
 Known Issues
 ------------
 
