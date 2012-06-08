@@ -23,13 +23,119 @@
 # Usage: See README and/or run with --help option.  
 # Configuration is now specified on the command line instead of here.
 
+# Note: this module is in the middle of being refactored.
+
 import os
 import colorsys
 import re
 import argparse
+import codecs
+
+# Setup
+
+default_source_directory = os.path.join(os.path.dirname(__file__),
+                                        'data', 'kanjivg','kanji')
+source_directory = default_source_directory # argparse may change this
+
+# Classes
+
+class KanjiVG(object):
+    '''
+    Class to create kanji objects containing KanjiVG data and some more
+    basic qualities of the character
+    '''
+    def __init__(self, character, variant=None):
+        u'''
+        Create a new KanjiVG object
+
+        >>> k1 = KanjiVG(u'漢')
+        >>> print(k1.character)
+        漢
+        >>> k1.variant
+        >>> k2 = KanjiVG(u'字', 'Kaisho')
+        >>> print(k2.character)
+        字
+        >>> k2.variant
+        'Kaisho'
+        >>> u'漢' not in k2.svg
+        True
+        '''
+        self.character = character
+        self.variant = variant
+        with codecs.open(os.path.join(source_directory, 
+                self.ascii_filename), encoding='utf-8') as f:
+            self.svg = f.read()
+
+    @classmethod
+    def _create_from_filename(cls, filename):
+        u'''
+        Alternate constructor that uses a KanjiVG filename.
+
+        >>> k = KanjiVG._create_from_filename('00061.svg')
+        >>> k.character
+        u'a'
+        '''
+        m = re.match('^([0-9a-f]*)-?(.*?).svg$', filename)
+        return cls(unichr(int(m.group(1), 16)), m.group(2))
+
+    @property
+    def ascii_filename(self):
+        u'''
+        An SVG filename in ASCII using the same format KanjiVG uses.
+
+        >>> k = KanjiVG(u'漢')
+        >>> k.ascii_filename
+        '06f22.svg'
+        '''
+        if not self.variant:
+            return '%05x.svg' % ord(self.character)
+        else:
+            return '%05x-%s.svg' % (ord(self.character), self.variant)
+
+    @property
+    def character_filename(self):
+        u'''
+        An SVG filename that uses the unicode character
+
+        >>> k = KanjiVG(u'漢')
+        >>> print(k.character_filename)
+        漢.svg
+        '''
+        if not self.variant:
+            return '%s.svg' % self.character
+        else:
+            return '%s-%s.svg' % (self.character, self.variant)
+
+    @classmethod
+    def get_all(cls):
+        u'''
+        Returns a complete list of KanjiVG objects; everything there is
+        data for
+
+        In the current partially-refactored state, the source directory
+        is set with the KanjiColorizer constructor
+        >>> throw_away = KanjiColorizer() # use default
+        >>> long_kanji_list = KanjiVG.get_all()
+        >>> len(long_kanji_list)
+        11251
+        >>> throw_away_object = KanjiColorizer('--source-directory ' +
+        ...     os.path.join('test', 'kanjivg', 'kanji'))
+        >>>  
+        >>> short_kanji_list = KanjiVG.get_all()
+        >>> for kanji in short_kanji_list:
+        ...     print(kanji.character)
+        あ
+        字
+        a
+        漢
+        '''
+        kanji = []
+        for file in os.listdir(source_directory):
+            kanji.append(cls._create_from_filename(file))
+        return kanji
 
 class KanjiColorizer:
-    """
+    u"""
     Class that creates colored stroke order diagrams out of kanjivg
     data, and writes them to file.
 
@@ -49,14 +155,21 @@ class KanjiColorizer:
 
     To create a set of diagrams:
     >>> kc.write_all()
-
-    If you want to convert a filename from hexcode to character form:
-    >>> kc.convert_filename('ac0de.svg')
-    u'\U000ac0de.svg'
-
+    
+    Note: This class is in the middle of having stuff that shouldn't be
+    included factored out.  Some things have already been moved to the
+    KanjiVG class; more stuff will move to other classes before 0.6.
     """
 
     def __init__(self, argstring=''):
+        '''
+        Creates a new instance of KanjiColorizer, which stores settings
+        and provides various methods to produce colored kanji SVGs.
+
+        Takes an option alrgument of with an argument string; see
+        read_arg_string documentation for information on how this is
+        used.
+        '''
         self._init_parser()
         self.read_arg_string(argstring)
     
@@ -111,8 +224,7 @@ class KanjiColorizer:
                         'as the code.  '
                         '(default: %(default)s)')
         self._parser.add_argument('-s', '--source-directory', 
-                    default=os.path.join(os.path.dirname(__file__),
-                                         'data', 'kanjivg','kanji')),
+                    default=default_source_directory)
         self._parser.add_argument('-o', '--output-directory',
                     default='colorized-kanji')
 
@@ -130,8 +242,13 @@ class KanjiColorizer:
         >>> kc.settings.mode
         'contrast'
 
+        Note that in the current transisional state of this class, the
+        --source-directory option sets that value globally, while other
+        values are per KanjiColorizer instance.
         """
         self.settings = self._parser.parse_args()
+        global source_directory
+        source_directory = self.settings.source_directory
 
     def read_arg_string(self, argstring):
         """
@@ -142,8 +259,13 @@ class KanjiColorizer:
         >>> kc.settings.mode
         'contrast'
 
+        Note that in the current transisional state of this class, the
+        --source-directory option sets that value globally, while other
+        values are per KanjiColorizer instance.
         """
         self.settings = self._parser.parse_args(argstring.split())
+        global source_directory
+        source_directory = self.settings.source_directory
 
     def get_colored_svg(self, character):
         """
@@ -151,16 +273,16 @@ class KanjiColorizer:
         for character.
 
         >>> kc = KanjiColorizer()
-        >>> svg = kc.get_colored_svg('c')
+        >>> svg = kc.get_colored_svg('a')
         >>> svg.splitlines()[0]
-        '<?xml version="1.0" encoding="UTF-8"?>'
-        >>> svg.find('00063')
+        u'<?xml version="1.0" encoding="UTF-8"?>'
+        >>> svg.find('00061')
         1783
         >>> svg.find('has been modified')
         54
 
         """
-        svg = self._get_original_svg(character)
+        svg = KanjiVG(character).svg
         svg = self._modify_svg(svg)
         return svg
     
@@ -177,11 +299,13 @@ class KanjiColorizer:
 
         These should be the correct files:
         >>> for file in os.listdir(test_output_dir):
-        ...     our_svg = open(
-        ...         os.path.join(test_output_dir, file), 'r').read()
-        ...     desired_svg = open(
+        ...     our_svg = codecs.open(
+        ...         os.path.join(test_output_dir, file), 
+        ...         'r', encoding='utf-8').read()
+        ...     desired_svg = codecs.open(
         ...         os.path.join('test', 'default_results', 
-        ...             'kanji-colorize-spectrum',  file), 'r').read()
+        ...             'kanji-colorize-spectrum',  file),
+        ...             'r', encoding='utf-8').read()
         ...     for line in difflib.context_diff(our_svg.splitlines(1), 
         ...            desired_svg.splitlines(1)):
         ...         print(line)
@@ -192,41 +316,26 @@ class KanjiColorizer:
 
         """
         self._setup_dst_dir()
-        for src_filename in os.listdir(self.settings.source_directory):
-            with open(os.path.join(self.settings.source_directory, 
-                    src_filename), 'r') as f:
-                svg = f.read()
-            svg = self._modify_svg(svg)
+        for kanji in KanjiVG.get_all():
+            svg = self._modify_svg(kanji.svg)
             dst_file_path = os.path.join(self.settings.output_directory, 
-                self._get_dst_filename(src_filename))
-            with open(dst_file_path, 'w') as f:
+                self._get_dst_filename(kanji))
+            with codecs.open(dst_file_path, 'w', encoding='utf-8') as f:
                 f.write(svg)
 
-    def get_character_filename(self, character):
-        u"""
-        Get the original filename for character
-
-        >>> kc = KanjiColorizer()
-        >>> kc.get_character_filename(u'漢')
-        '06f22.svg'
-
-        """
-        return '%05x.svg' % ord(character)
-
-    
     def _modify_svg(self, svg):
         u"""
         Applies all desired changes to the SVG
 
         >>> kc = KanjiColorizer('')
-        >>> original_svg = open(
+        >>> original_svg = codecs.open(
         ...    os.path.join('test', 'kanjivg', 'kanji', '06f22.svg'), 
-        ...    'r').read()
-        >>> desired_svg = open(
+        ...    'r', encoding='utf-8').read()
+        >>> desired_svg = codecs.open(
         ...    os.path.join(
         ...        'test', 'default_results', 'kanji-colorize-spectrum', 
         ...        u'漢.svg'), 
-        ...    'r').read()
+        ...    'r', encoding='utf-8').read()
         >>> for line in difflib.context_diff(
         ...        kc._modify_svg(original_svg).splitlines(1), 
         ...        desired_svg.splitlines(1)):
@@ -237,23 +346,6 @@ class KanjiColorizer:
         svg = self._resize_svg(svg)
         svg = self._comment_copyright(svg)
         return svg
-
-    def convert_filename(self, filename):
-        r"""
-        Convert unicode code in filename to actual character
-        
-        >>> kc = KanjiColorizer('')
-        >>> kc.convert_filename('00063.svg')
-        u'c.svg'
-        >>> kc.convert_filename('06f22.svg')
-        u'\u6f22.svg'
-        >>> kc.convert_filename('05b57-Kaisho.svg')
-        u'\u5b57-Kaisho.svg'
-        """
-        def hex_to_unicode_char(match_object):
-            'local function used for a call to re.sub'
-            return unichr(int(match_object.group(0), 16))
-        return re.sub('^[0-9a-fA-F]*', hex_to_unicode_char, filename)
 
     # Private methods for working with files and directories
 
@@ -288,39 +380,22 @@ class KanjiColorizer:
         if not (os.path.exists(self.settings.output_directory)):
             os.mkdir(self.settings.output_directory)
 
-    def _get_dst_filename(self, src_filename):
+    def _get_dst_filename(self, kanji):
         """
         Return the correct filename, based on args.filename-mode
 
         >>> kc = KanjiColorizer('--filename-mode code')
-        >>> kc._get_dst_filename('00063.svg')
-        '00063.svg'
+        >>> kc._get_dst_filename(KanjiVG('a'))
+        '00061.svg'
         >>> kc = KanjiColorizer('--filename-mode character')
-        >>> kc._get_dst_filename('00063.svg')
-        u'c.svg'
+        >>> kc._get_dst_filename(KanjiVG('a'))
+        'a.svg'
 
         """
         if (self.settings.filename_mode == 'character'):
-            return self.convert_filename(src_filename)
+            return kanji.character_filename
         else:
-            return src_filename
-
-    def _get_original_svg(self, character):
-        """
-        Get the unmodified svg text for given character
-
-        >>> kc = KanjiColorizer()
-        >>> svg = kc._get_original_svg('c')
-        >>> svg.splitlines()[0]
-        '<?xml version="1.0" encoding="UTF-8"?>'
-        >>> svg.find('00063')
-        1418
-
-        """
-        with open(os.path.join(self.settings.source_directory,
-                self.get_character_filename(character))) as f:
-            svg = f.read()
-        return svg
+            return kanji.ascii_filename
 
     # private methods for modifying svgs
     
