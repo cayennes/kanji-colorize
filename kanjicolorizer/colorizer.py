@@ -378,7 +378,6 @@ class KanjiColorizer:
         >>> os.rmdir('doctest-tmp')
         >>> os.chdir(current_directory)
         """
-        dst_dir = self.settings.output_directory
         if not (os.path.exists(self.settings.output_directory)):
             os.mkdir(self.settings.output_directory)
 
