@@ -86,7 +86,6 @@ dstField = 'Diagram'
 
 kc = KanjiColorizer(config)
 
-# Function to add a colorized kanji to a card
 
 def modelIsCorrectType(model):
     '''
@@ -96,9 +95,10 @@ def modelIsCorrectType(model):
     # Does the model name have Japanese in it?
     model_name = model['name'].lower()
     fields = mw.col.models.fieldNames(model)
-    return ('japanese' in model_name and 
-                         srcField in fields and 
+    return ('japanese' in model_name and
+                         srcField in fields and
                          dstField in fields)
+
 
 def kanjiToAdd(note, currentFieldIndex=None):
     '''
@@ -107,7 +107,7 @@ def kanjiToAdd(note, currentFieldIndex=None):
     '''
     if not modelIsCorrectType(note.model()):
         return None
-    if currentFieldIndex != None: # We've left a field
+    if currentFieldIndex != None:  # We've left a field
         # But it isn't the relevant one
         if note.model()['flds'][currentFieldIndex]['name'] != srcField:
             return None
@@ -119,6 +119,7 @@ def kanjiToAdd(note, currentFieldIndex=None):
         return None
     return srcTxt
 
+
 def addKanji(note, flag=False, currentFieldIndex=None):
     '''
     Checks to see if a kanji should be added, and adds it if so.
@@ -128,7 +129,7 @@ def addKanji(note, flag=False, currentFieldIndex=None):
         return flag
     # write to file; anki works in the media directory by default
     filename = kc.get_character_filename(character)
-    with open(filename,'w') as file:
+    with open(filename, 'w') as file:
         file.write(kc.get_colored_svg(character))
         mw.col.media.addFile(os.path.abspath(filename))
         note[dstField] = '<img src="%s">' % filename
@@ -142,6 +143,7 @@ def onFocusLost(flag, note, currentFieldIndex):
     return addKanji(note, flag, currentFieldIndex)
 
 addHook('editFocusLost', onFocusLost)
+
 
 # menu item to regenerate all
 

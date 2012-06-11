@@ -20,7 +20,7 @@
 # License along with this program.  If not, see
 # <http://www.gnu.org/licenses/>.
 
-# Usage: See README and/or run with --help option.  
+# Usage: See README and/or run with --help option.
 # Configuration is now specified on the command line instead of here.
 
 # Note: this module is in the middle of being refactored.
@@ -34,8 +34,9 @@ import codecs
 # Setup
 
 default_source_directory = os.path.join(os.path.dirname(__file__),
-                                        'data', 'kanjivg','kanji')
-source_directory = default_source_directory # argparse may change this
+                                        'data', 'kanjivg', 'kanji')
+source_directory = default_source_directory   # argparse may change this
+
 
 # Classes
 
@@ -62,7 +63,7 @@ class KanjiVG(object):
         '''
         self.character = character
         self.variant = variant
-        with codecs.open(os.path.join(source_directory, 
+        with codecs.open(os.path.join(source_directory,
                 self.ascii_filename), encoding='utf-8') as f:
             self.svg = f.read()
 
@@ -114,13 +115,13 @@ class KanjiVG(object):
 
         In the current partially-refactored state, the source directory
         is set with the KanjiColorizer constructor
-        >>> throw_away = KanjiColorizer() # use default
+        >>> throw_away = KanjiColorizer()  # use default
         >>> long_kanji_list = KanjiVG.get_all()
         >>> len(long_kanji_list)
         11251
         >>> throw_away_object = KanjiColorizer('--source-directory ' +
         ...     os.path.join('test', 'kanjivg', 'kanji'))
-        >>>  
+        >>>
         >>> short_kanji_list = KanjiVG.get_all()
         >>> for kanji in short_kanji_list:
         ...     print(kanji.character)
@@ -134,6 +135,7 @@ class KanjiVG(object):
             kanji.append(cls._create_from_filename(file))
         return kanji
 
+
 class KanjiColorizer:
     u"""
     Class that creates colored stroke order diagrams out of kanjivg
@@ -146,7 +148,7 @@ class KanjiColorizer:
     the command line.
     >>> test_input_dir = os.path.join('test', 'kanjivg', 'kanji')
     >>> test_output_dir = os.path.join('test', 'colorized-kanji')
-    >>> my_args = ' '.join(['--source-directory', test_input_dir, 
+    >>> my_args = ' '.join(['--source-directory', test_input_dir,
     ...                     '--output', test_output_dir])
     >>> kc = KanjiColorizer(my_args)
 
@@ -155,7 +157,7 @@ class KanjiColorizer:
 
     To create a set of diagrams:
     >>> kc.write_all()
-    
+
     Note: This class is in the middle of having stuff that shouldn't be
     included factored out.  Some things have already been moved to the
     KanjiVG class; more stuff will move to other classes before 0.6.
@@ -172,13 +174,13 @@ class KanjiColorizer:
         '''
         self._init_parser()
         self.read_arg_string(argstring)
-    
+
     def _init_parser(self):
         r"""
         Initializes argparse.ArgumentParser self._parser
 
         >>> kc = KanjiColorizer()
-        
+
         To show that it really is creating it:
         >>> kc._parser = None
 
@@ -223,7 +225,7 @@ class KanjiColorizer:
                         'unicode character as a filename.  code: leave it '
                         'as the code.  '
                         '(default: %(default)s)')
-        self._parser.add_argument('-s', '--source-directory', 
+        self._parser.add_argument('-s', '--source-directory',
                     default=default_source_directory)
         self._parser.add_argument('-o', '--output-directory',
                     default='colorized-kanji')
@@ -285,28 +287,28 @@ class KanjiColorizer:
         svg = KanjiVG(character).svg
         svg = self._modify_svg(svg)
         return svg
-    
+
     def write_all(self):
         """
         Converts all svgs, and prints them to files in the destination
         directory
-        
+
         >>> test_input_dir = os.path.join('test', 'kanjivg', 'kanji')
         >>> test_output_dir = os.path.join('test', 'colorized-kanji')
-        >>> kc = KanjiColorizer(' '.join(['--source-directory', 
+        >>> kc = KanjiColorizer(' '.join(['--source-directory',
         ...     test_input_dir, '--output', test_output_dir]))
         >>> kc.write_all()
 
         These should be the correct files:
         >>> for file in os.listdir(test_output_dir):
         ...     our_svg = codecs.open(
-        ...         os.path.join(test_output_dir, file), 
+        ...         os.path.join(test_output_dir, file),
         ...         'r', encoding='utf-8').read()
         ...     desired_svg = codecs.open(
-        ...         os.path.join('test', 'default_results', 
+        ...         os.path.join('test', 'default_results',
         ...             'kanji-colorize-spectrum',  file),
         ...             'r', encoding='utf-8').read()
-        ...     for line in difflib.context_diff(our_svg.splitlines(1), 
+        ...     for line in difflib.context_diff(our_svg.splitlines(1),
         ...            desired_svg.splitlines(1)):
         ...         print(line)
         ...
@@ -318,7 +320,7 @@ class KanjiColorizer:
         self._setup_dst_dir()
         for kanji in KanjiVG.get_all():
             svg = self._modify_svg(kanji.svg)
-            dst_file_path = os.path.join(self.settings.output_directory, 
+            dst_file_path = os.path.join(self.settings.output_directory,
                 self._get_dst_filename(kanji))
             with codecs.open(dst_file_path, 'w', encoding='utf-8') as f:
                 f.write(svg)
@@ -329,15 +331,15 @@ class KanjiColorizer:
 
         >>> kc = KanjiColorizer('')
         >>> original_svg = codecs.open(
-        ...    os.path.join('test', 'kanjivg', 'kanji', '06f22.svg'), 
+        ...    os.path.join('test', 'kanjivg', 'kanji', '06f22.svg'),
         ...    'r', encoding='utf-8').read()
         >>> desired_svg = codecs.open(
         ...    os.path.join(
-        ...        'test', 'default_results', 'kanji-colorize-spectrum', 
-        ...        u'漢.svg'), 
+        ...        'test', 'default_results', 'kanji-colorize-spectrum',
+        ...        u'漢.svg'),
         ...    'r', encoding='utf-8').read()
         >>> for line in difflib.context_diff(
-        ...        kc._modify_svg(original_svg).splitlines(1), 
+        ...        kc._modify_svg(original_svg).splitlines(1),
         ...        desired_svg.splitlines(1)):
         ...     print(line)
         ...
@@ -351,7 +353,7 @@ class KanjiColorizer:
 
     def _setup_dst_dir(self):
         """
-        Creates the destination directory args.output_directory if 
+        Creates the destination directory args.output_directory if
         necessary
 
         (Set up the doctest environment)
@@ -398,7 +400,7 @@ class KanjiColorizer:
             return kanji.ascii_filename
 
     # private methods for modifying svgs
-    
+
     def _color_svg(self, svg):
         """
         Color the svg with colors from _color_generator, which uses
@@ -417,14 +419,15 @@ class KanjiColorizer:
         '<svg><path style="stroke:#bf0909" /><path style="stroke:#09bfbf" /></svg>'
         """
         color_iterator = self._color_generator(self._stroke_count(svg))
+
         def color_match(match_object):
             return (
-                match_object.re.pattern +  
-                'style="stroke:' + 
+                match_object.re.pattern +
+                'style="stroke:' +
                 next(color_iterator) + '" ')
+
         svg = re.sub('<path ', color_match, svg)
         return re.sub('<text ', color_match, svg)
-
 
     def _comment_copyright(self, svg):
         """
@@ -481,7 +484,7 @@ The original SVG has the following copyright:
         >>> kc._resize_svg(svg)
         '<svg  width="327" height = "327" viewBox="0 0 327 327"><!109><g id="kvg:StrokePaths_" transform="scale(3.0,3.0)"><path /></g><g id="kvg:StrokeNumbers_" transform="scale(3.0,3.0)"><text /></g></svg>'
         """
-        ratio = `float(self.settings.image_size) / 109`
+        ratio = repr(float(self.settings.image_size) / 109)
         svg = svg.replace(
             '109" height="109" viewBox="0 0 109 109', 
             '{0}" height = "{0}" viewBox="0 0 {0} {0}'.format(
@@ -491,7 +494,7 @@ The original SVG has the following copyright:
             r'\1 transform="scale(' + ratio + ',' + ratio + r')"\2', 
             svg)
         return svg
-    
+
     # Private utility methods
 
     def _stroke_count(self, svg):
@@ -537,13 +540,13 @@ The original SVG has the following copyright:
         ['#bf0909', '#09bfbf', '#bf0909', '#09bfbf']
         """
         if (self.settings.mode == "contrast"):
-            angle = 0.618033988749895 # conjugate of the golden ratio
+            angle = 0.618033988749895  # conjugate of the golden ratio
             for i in 2 * range(n):
-                yield self._hsv_to_rgbhexcode(i * angle, 
+                yield self._hsv_to_rgbhexcode(i * angle,
                     self.settings.saturation, self.settings.value)
-        else: # spectrum is default
+        else:  # spectrum is default
             for i in 2 * range(n):
-                yield self._hsv_to_rgbhexcode(float(i)/n, 
+                yield self._hsv_to_rgbhexcode(float(i) / n,
                     self.settings.saturation, self.settings.value)
 
 if __name__ == "__main__":
