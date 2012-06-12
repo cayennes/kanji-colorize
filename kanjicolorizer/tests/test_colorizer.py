@@ -24,5 +24,43 @@ import unittest
 from kanjicolorizer.colorizer import KanjiVG
 
 
+class KanjiVGInitTest(unittest.TestCase):
+
+    def test_valid_ascii_character_inits(self):
+        k = KanjiVG('a')
+        self.assertEqual(k.character, 'a')
+        self.assertEqual(k.variant, None)
+
+    def test_valid_ascii_character_contains_named_stroke_group(self):
+        '''
+        This is a proxy for having read the correct file
+        '''
+        k = KanjiVG('a')
+        self.assertIn('kvg:StrokePaths_00061', k.svg)
+
+    def test_valid_nonascii_character_inits(self):
+        k = KanjiVG(u'あ')
+        self.assertEqual(k.character, u'あ')
+        self.assertEqual(k.variant, None)
+
+    def test_valid_nonascii_character_contains_named_stroke_group(self):
+        '''
+        This is a proxy for having read the correct file
+        '''
+        k = KanjiVG(u'あ')
+        self.assertIn('kvg:StrokePaths_03042', k.svg)
+
+    def test_valid_variant_inits(self):
+        k = KanjiVG(u'字', 'Kaisho')
+        self.assertEqual(k.character, u'字')
+        self.assertEqual(k.variant, 'Kaisho')
+
+    def test_valid_variant_contains_named_stroke_group(self):
+        '''
+        This is a proxy for having read the correct file
+        '''
+        k = KanjiVG(u'字', 'Kaisho')
+        self.assertIn('kvg:StrokePaths_05b57-Kaisho', k.svg)
+
 if __name__ == "__main__":
     unittest.main()
