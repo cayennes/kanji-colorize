@@ -21,6 +21,8 @@
 # <http://www.gnu.org/licenses/>.
 
 import unittest
+from mock import patch
+from kanjicolorizer import colorizer
 from kanjicolorizer.colorizer import KanjiVG
 
 
@@ -61,6 +63,62 @@ class KanjiVGInitTest(unittest.TestCase):
         '''
         k = KanjiVG(u'字', 'Kaisho')
         self.assertIn('kvg:StrokePaths_05b57-Kaisho', k.svg)
+
+    def test_with_invalid_character_raises_correct_ex_args(self):
+        with self.assertRaises(colorizer.InvalidCharacterError) as cm:
+            KanjiVG(u'Л')
+        # args set
+        self.assertEqual(cm.exception.args[0], u'Л')
+        self.assertEqual(cm.exception.args[1], None)
+        # message contains the useful information
+        self.assertIn(repr(u'Л'), repr(cm.exception))
+        self.assertIn(repr(None), repr(cm.exception))
+
+    def test_with_multiple_characters_raises_correct_exception(self):
+        self.assertRaises(
+            colorizer.InvalidCharacterError,
+            KanjiVG,
+            (u'漢字'))
+
+    def test_with_nonexistent_variant_raises_correct_ex_args(self):
+        with self.assertRaises(colorizer.InvalidCharacterError) as cm:
+            KanjiVG(u'字', 'gobbledygook')
+        # args set
+        self.assertEqual(cm.exception.args[0], u'字')
+        self.assertEqual(cm.exception.args[1], 'gobbledygook')
+        # message contains the useful information
+        self.assertIn(repr(u'字'), repr(cm.exception))
+        self.assertIn(repr('gobbledygook'), repr(cm.exception))
+
+    def test_with_mismatched_variant_raises_correct_exception(self):
+        self.assertRaises(
+            colorizer.InvalidCharacterError,
+            KanjiVG,
+            (u'漢', 'Kaisho'))
+
+    def test_empty_variant_raises_correct_exception(self):
+        self.assertRaises(
+            colorizer.InvalidCharacterError,
+            KanjiVG,
+            (u'字', ''))
+
+    def test_with_too_few_parameters_raises_correct_exception(self):
+        self.assertRaises(
+            colorizer.InvalidCharacterError,
+            KanjiVG,
+            ())
+
+    def test_permission_denied_error_propogated(self):
+        '''
+        Errors other than file not found are unknown problems; the
+        exception should not be caught or changed
+        '''
+        with patch('__builtin__.open') as mock_open:
+            mock_open.side_effect = IOError(31, 'Permission denied')
+            self.assertRaises(
+                IOError,
+                KanjiVG,
+                ('a'))
 
 if __name__ == "__main__":
     unittest.main()

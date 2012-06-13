@@ -30,6 +30,7 @@ import colorsys
 import re
 import argparse
 import codecs
+from errno import ENOENT as FILE_NOT_FOUND
 
 # Setup
 
@@ -64,12 +65,26 @@ class KanjiVG(object):
         字
         >>> k2.variant
         'Kaisho'
+
+        Raises InvalidCharacterError if the character and variant don't
+        correspond to known data
+
+        >>> k = KanjiVG((u'Л'))
+        Traceback (most recent call last):
+            ...
+        InvalidCharacterError: (u'\\u041b', None)
         '''
         self.character = character
         self.variant = variant
-        with codecs.open(os.path.join(source_directory,
-                self.ascii_filename), encoding='utf-8') as f:
-            self.svg = f.read()
+        try:
+            with codecs.open(os.path.join(source_directory,
+                    self.ascii_filename), encoding='utf-8') as f:
+                self.svg = f.read()
+        except IOError as e:  # file not found
+            if e.errno == FILE_NOT_FOUND:
+                raise InvalidCharacterError(character, variant)
+            else:
+                raise
 
     @classmethod
     def _create_from_filename(cls, filename):
@@ -91,11 +106,19 @@ class KanjiVG(object):
         >>> k = KanjiVG(u'漢')
         >>> k.ascii_filename
         '06f22.svg'
+
+        May raise InvalidCharacterError for some kinds of invalid
+        character/variant combinations; this should only happen during
+        object initialization.
         '''
+        try:
+            code = '%05x' % ord(self.character)
+        except TypeError:  # character not a character
+            raise InvalidCharacterError(self.character, self.variant)
         if not self.variant:
-            return '%05x.svg' % ord(self.character)
+            return code + '.svg'
         else:
-            return '%05x-%s.svg' % (ord(self.character), self.variant)
+            return '%s-%s.svg' % (code, self.variant)
 
     @property
     def character_filename(self):
@@ -551,6 +574,26 @@ The original SVG has the following copyright:
             for i in 2 * range(n):
                 yield self._hsv_to_rgbhexcode(float(i) / n,
                     self.settings.saturation, self.settings.value)
+
+
+# Exceptions
+
+class Error(Exception):
+    '''
+    Base class for this module's exceptions
+    '''
+    pass
+
+
+class InvalidCharacterError(Error):
+    '''
+    Exception thrown when trying to initialize or use a character that
+    there isn't data for
+    '''
+    pass
+
+
+# Test if run
 
 if __name__ == "__main__":
     import doctest
