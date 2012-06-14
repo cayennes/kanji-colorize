@@ -31,7 +31,7 @@ class KanjiVGInitTest(unittest.TestCase):
     def test_valid_ascii_character_inits(self):
         k = KanjiVG('a')
         self.assertEqual(k.character, 'a')
-        self.assertEqual(k.variant, None)
+        self.assertEqual(k.variant, '')
 
     def test_valid_ascii_character_contains_named_stroke_group(self):
         '''
@@ -43,7 +43,7 @@ class KanjiVGInitTest(unittest.TestCase):
     def test_valid_nonascii_character_inits(self):
         k = KanjiVG(u'あ')
         self.assertEqual(k.character, u'あ')
-        self.assertEqual(k.variant, None)
+        self.assertEqual(k.variant, '')
 
     def test_valid_nonascii_character_contains_named_stroke_group(self):
         '''
@@ -64,15 +64,18 @@ class KanjiVGInitTest(unittest.TestCase):
         k = KanjiVG(u'字', 'Kaisho')
         self.assertIn('kvg:StrokePaths_05b57-Kaisho', k.svg)
 
+    def test_explicit_none_variant_inits_to_empty_string(self):
+        k = KanjiVG(u'字', None)
+        self.assertEquals(k.variant, '')
+
     def test_with_invalid_character_raises_correct_ex_args(self):
         with self.assertRaises(colorizer.InvalidCharacterError) as cm:
             KanjiVG(u'Л')
         # args set
         self.assertEqual(cm.exception.args[0], u'Л')
-        self.assertEqual(cm.exception.args[1], None)
+        self.assertEqual(cm.exception.args[1], '')
         # message contains the useful information
         self.assertIn(repr(u'Л'), repr(cm.exception))
-        self.assertIn(repr(None), repr(cm.exception))
 
     def test_with_multiple_characters_raises_correct_exception(self):
         self.assertRaises(

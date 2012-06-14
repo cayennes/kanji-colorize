@@ -46,7 +46,7 @@ class KanjiVG(object):
     Class to create kanji objects containing KanjiVG data and some more
     basic qualities of the character
     '''
-    def __init__(self, character, variant=None):
+    def __init__(self, character, variant=''):
         u'''
         Create a new KanjiVG object
 
@@ -56,6 +56,7 @@ class KanjiVG(object):
         >>> print(k1.character)
         漢
         >>> k1.variant
+        ''
 
         Or if the character has a variant, give that as a second
         argument
@@ -72,10 +73,12 @@ class KanjiVG(object):
         >>> k = KanjiVG((u'Л'))
         Traceback (most recent call last):
             ...
-        InvalidCharacterError: (u'\\u041b', None)
+        InvalidCharacterError: (u'\\u041b', '')
         '''
         self.character = character
         self.variant = variant
+        if self.variant is None:
+            self.variant = ''
         try:
             with codecs.open(os.path.join(source_directory,
                     self.ascii_filename), encoding='utf-8') as f:
