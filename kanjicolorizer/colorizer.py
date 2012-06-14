@@ -113,7 +113,7 @@ class KanjiVG(object):
 
         May raise InvalidCharacterError for some kinds of invalid
         character/variant combinations; this should only happen during
-        object initialization.
+        KanjiVG object initialization.
         '''
         try:
             code = '%05x' % ord(self.character)

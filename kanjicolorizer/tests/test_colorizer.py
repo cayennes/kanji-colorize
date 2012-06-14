@@ -158,5 +158,21 @@ class KanjiVGCreateFromFilenameTest(unittest.TestCase):
             KanjiVG._create_from_filename,
             '5b57')
 
+
+class KanjiVGAsciiFilenameTest(unittest.TestCase):
+
+    def test_without_variant_has_correct_filename(self):
+        k = KanjiVG(u'あ')
+        self.assertEqual(k.ascii_filename, '03042.svg')
+
+    def test_with_variant_has_correct_filename(self):
+        k = KanjiVG(u'字', 'Kaisho')
+        self.assertEqual(k.ascii_filename, '05b57-Kaisho.svg')
+
+    def test_five_digit_unicode_character_has_correct_filename(self):
+        k = KanjiVG(u'𦥑')
+        self.assertEqual(k.ascii_filename, '26951.svg')
+
+
 if __name__ == "__main__":
     unittest.main()
