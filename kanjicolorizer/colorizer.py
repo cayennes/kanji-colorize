@@ -92,7 +92,8 @@ class KanjiVG(object):
     @classmethod
     def _create_from_filename(cls, filename):
         u'''
-        Alternate constructor that uses a KanjiVG filename.
+        Alternate constructor that uses a KanjiVG filename; used by
+        get_all().
 
         >>> k = KanjiVG._create_from_filename('00061.svg')
         >>> k.character

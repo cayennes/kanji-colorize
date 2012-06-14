@@ -123,5 +123,40 @@ class KanjiVGInitTest(unittest.TestCase):
                 KanjiVG,
                 ('a'))
 
+
+class KanjiVGCreateFromFilenameTest(unittest.TestCase):
+
+    def test_without_variant_with_hex_inits(self):
+        k = KanjiVG._create_from_filename('06f22.svg')
+        self.assertEquals(k.character, u'漢')
+        self.assertEquals(k.variant, '')
+
+    def test_with_variant_inits(self):
+        k = KanjiVG._create_from_filename('05b57-Kaisho.svg')
+        self.assertEquals(k.character, u'字')
+        self.assertEquals(k.variant, 'Kaisho')
+
+    def test_five_digit_inits(self):
+        k = KanjiVG._create_from_filename('26951.svg')
+        self.assertEquals(k.character, u'𦥑')
+
+    def test_correct_format_nonexistent_file_raises_exception(self):
+        '''
+        As a private method, the precise exception is unimportant
+        '''
+        self.assertRaises(
+            Exception,
+            KanjiVG._create_from_filename,
+            '10000.svg')
+
+    def test_incorrect_format_raises_exception(self):
+        '''
+        As a private method, the precise exception is unimportant
+        '''
+        self.assertRaises(
+            Exception,
+            KanjiVG._create_from_filename,
+            '5b57')
+
 if __name__ == "__main__":
     unittest.main()
