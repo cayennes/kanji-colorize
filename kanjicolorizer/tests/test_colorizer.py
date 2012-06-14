@@ -21,11 +21,10 @@
 # <http://www.gnu.org/licenses/>.
 
 import unittest
-from mock import patch
+from mock import MagicMock, patch
 import os
 from kanjicolorizer import colorizer
 from kanjicolorizer.colorizer import KanjiVG, KanjiColorizer
-
 
 TOTAL_NUMBER_CHARACTERS = 11251
 
@@ -191,13 +190,6 @@ class KanjiVGCharacterFilenameTest(unittest.TestCase):
 
 class KanjiVGGetAllTest(unittest.TestCase):
 
-    def setUp(self):
-        '''
-        This is necessary to reset the source directory to default until
-        the --source-directory option is removed
-        '''
-        KanjiColorizer()
-
     def test_has_correct_number(self):
         all_kanji = KanjiVG.get_all()
         self.assertEqual(len(all_kanji), TOTAL_NUMBER_CHARACTERS)
@@ -206,16 +198,122 @@ class KanjiVGGetAllTest(unittest.TestCase):
         all_kanji = KanjiVG.get_all()
         self.assertIsInstance(all_kanji[0], KanjiVG)
 
-    def test_alternate_source_directory_has_correct_number(self):
+
+class KanjiColorizerCharactersOptionTest(unittest.TestCase):
+
+    def setUp(self):
+        # replace the open function with a mock; reading any file will
+        # return ''
+        patch_open = patch('__builtin__.open')
+        self.mock_open = patch_open.start()
+        self.addCleanup(patch_open.stop)
+        self.mock_open.return_value = MagicMock(spec=file)
+        self.mock_open.return_value.read = MagicMock(return_value='')
+
+    def assertOpenedFileForWriting(self, file_name):
         '''
-        This feature is going to go away soon, and is currently used
-        oddly.
+        Checks self.open_mock to find out whether it was called with 'w'
+        in the second argument and file_name as the file part of the
+        first. (This ignores the path part of the open.)  Asserts that
+        it was.
         '''
-        KanjiColorizer(
-            '--source-directory ' +
-            os.path.join('test', 'kanjivg', 'kanji'))
-        short_kanji_list = KanjiVG.get_all()
-        self.assertEqual(len(short_kanji_list), 4)
+        calls = self.mock_open.call_args_list
+        files_opened_for_writing = [
+            os.path.split(c[0][0])[1]
+            for c in calls if ('w' in c[0][1])]
+        self.assertIn(file_name, files_opened_for_writing)
+
+    def assertDidntOpenFileForWriting(self, file_name):
+        '''
+        Checks self.open_mock to find out whether it was called with 'w'
+        in the second argument and file_name as the file part of the
+        first. (This ignores the path part of the open.)  Asserts that
+        it wasn't.
+        '''
+        calls = self.mock_open.call_args_list
+        files_opened_for_writing = [
+            os.path.split(c[0][0])[1]
+            for c in calls if ('w' in c[0][1])]
+        self.assertNotIn(file_name, files_opened_for_writing)
+
+    def assertNumberFilesOpenedForWriting(self, number):
+        '''
+        Checks self.open_mock to find out how many times it was called
+        with 'w' in the second argument.  Asserts that it was number.
+        '''
+        calls = self.mock_open.call_args_list
+        self.assertEqual(len([c for c in calls if 'w' in c[0][1]]), number)
+
+    def test_ascii_sets_setting(self):
+        kc = KanjiColorizer('--characters a')
+        self.assertEqual(kc.settings.characters, u'a')
+
+    def test_nonascii_sets_setting(self):
+        kc = KanjiColorizer(u'--characters あ')
+        self.assertEqual(kc.settings.characters, u'あ')
+
+    def test_multiple_characters_sets_setting(self):
+        kc = KanjiColorizer(u'--characters 漢字')
+        self.assertEqual(kc.settings.characters, u'漢字')
+
+    def test_default_writes_correct_number(self):
+        kc = KanjiColorizer()
+        kc.write_all()
+        self.assertNumberFilesOpenedForWriting(TOTAL_NUMBER_CHARACTERS)
+
+    def test_default_writes_some_characters(self):
+        kc = KanjiColorizer()
+        kc.write_all()
+        self.assertOpenedFileForWriting(u'a.svg')
+        self.assertOpenedFileForWriting(u'あ.svg')
+
+    def test_writes_a_character(self):
+        kc = KanjiColorizer()
+        kc.settings.characters = u'あ'
+        kc.write_all()
+        self.assertOpenedFileForWriting(u'あ.svg')
+        self.assertNumberFilesOpenedForWriting(1)
+
+    def test_writes_only_one_character(self):
+        kc = KanjiColorizer()
+        kc.settings.characters = u'あ'
+        kc.write_all()
+        self.assertNumberFilesOpenedForWriting(1)
+
+    def test_writes_exactly_two_characters(self):
+        kc = KanjiColorizer()
+        kc.settings.characters = u'漢字'
+        kc.write_all()
+        self.assertNumberFilesOpenedForWriting(2)
+
+    def test_writes_correct_two_characters(self):
+        kc = KanjiColorizer()
+        kc.settings.characters = u'漢字'
+        kc.write_all()
+        self.assertOpenedFileForWriting(u'漢.svg')
+        self.assertOpenedFileForWriting(u'字.svg')
+
+    @unittest.expectedFailure
+    # All characters seem valid when open is mocked and a character's
+    # validity is checked by the existence of a file.
+    def test_invalid_character_doesnt_write_file(self):
+        kc = KanjiColorizer()
+        kc.settings.characters = u'Л'
+        kc.write_all()
+        self.assertDidntOpenFileForWriting(u'Л.svg')
+
+    def test_invalid_after_valid_writes_valid(self):
+        kc = KanjiColorizer()
+        kc.settings.characters = u'あЛ'
+        kc.write_all()
+        self.assertOpenedFileForWriting(u'あ.svg')
+
+    def test_invalid_before_valid_writes_valid(self):
+        kc = KanjiColorizer()
+        kc.settings.characters = u'Лあ'
+        kc.write_all()
+        self.assertOpenedFileForWriting(u'あ.svg')
+
 
 if __name__ == "__main__":
     unittest.main()

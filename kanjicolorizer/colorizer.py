@@ -31,12 +31,12 @@ import re
 import argparse
 import codecs
 from errno import ENOENT as FILE_NOT_FOUND
+import sys
 
 # Setup
 
-default_source_directory = os.path.join(os.path.dirname(__file__),
-                                        'data', 'kanjivg', 'kanji')
-source_directory = default_source_directory   # argparse may change this
+source_directory = os.path.join(os.path.dirname(__file__),
+                                'data', 'kanjivg', 'kanji')
 
 
 # Classes
@@ -164,9 +164,8 @@ class KanjiColorizer:
 
     Settings can set by initializing with a string in the same format as
     the command line.
-    >>> test_input_dir = os.path.join('test', 'kanjivg', 'kanji')
     >>> test_output_dir = os.path.join('test', 'colorized-kanji')
-    >>> my_args = ' '.join(['--source-directory', test_input_dir,
+    >>> my_args = ' '.join(['--characters', u'aあ漢',
     ...                     '--output', test_output_dir])
     >>> kc = KanjiColorizer(my_args)
 
@@ -237,14 +236,18 @@ class KanjiColorizer:
                     help="image size in pixels; they're square so this "
                         'will be both height and width '
                         '(default: %(default)s)')
+        self._parser.add_argument('--characters', type=unicode,
+                    help='a list of characters to include, without '
+                         'spaces; if this option is used, no variants '
+                         'will be included; if this option is not '
+                         'used, all characters will be included, '
+                         'including variants')
         self._parser.add_argument('--filename-mode', default='character',
                     choices=['character', 'code'],
                     help='character: rename the files to use the '
                         'unicode character as a filename.  code: leave it '
                         'as the code.  '
                         '(default: %(default)s)')
-        self._parser.add_argument('-s', '--source-directory',
-                    default=default_source_directory)
         self._parser.add_argument('-o', '--output-directory',
                     default='colorized-kanji')
 
@@ -260,15 +263,12 @@ class KanjiColorizer:
         >>> sys.argv = ['this.py', '--mode', 'contrast']
         >>> kc.read_cl_args()
         >>> kc.settings.mode
-        'contrast'
-
-        Note that in the current transisional state of this class, the
-        --source-directory option sets that value globally, while other
-        values are per KanjiColorizer instance.
+        u'contrast'
         """
+        # Put argv in the correct encoding
+        for i in range(len(sys.argv)):
+            sys.argv[i] = sys.argv[i].decode(sys.stdin.encoding)
         self.settings = self._parser.parse_args()
-        global source_directory
-        source_directory = self.settings.source_directory
 
     def read_arg_string(self, argstring):
         """
@@ -278,14 +278,8 @@ class KanjiColorizer:
         >>> kc.read_arg_string('--mode contrast')
         >>> kc.settings.mode
         'contrast'
-
-        Note that in the current transisional state of this class, the
-        --source-directory option sets that value globally, while other
-        values are per KanjiColorizer instance.
         """
         self.settings = self._parser.parse_args(argstring.split())
-        global source_directory
-        source_directory = self.settings.source_directory
 
     def get_colored_svg(self, character):
         """
@@ -308,13 +302,14 @@ class KanjiColorizer:
 
     def write_all(self):
         """
-        Converts all svgs, and prints them to files in the destination
-        directory
+        Converts all svgs (or only those specified with the --characters
+        option) and prints them to files in the destination directory.
 
-        >>> test_input_dir = os.path.join('test', 'kanjivg', 'kanji')
+        Silently ignores invalid characters.
+
         >>> test_output_dir = os.path.join('test', 'colorized-kanji')
-        >>> kc = KanjiColorizer(' '.join(['--source-directory',
-        ...     test_input_dir, '--output', test_output_dir]))
+        >>> kc = KanjiColorizer(' '.join(['--characters', u'aあ漢',
+        ...                               '--output', test_output_dir]))
         >>> kc.write_all()
 
         These should be the correct files:
@@ -336,7 +331,16 @@ class KanjiColorizer:
 
         """
         self._setup_dst_dir()
-        for kanji in KanjiVG.get_all():
+        if not self.settings.characters:
+            characters = KanjiVG.get_all()
+        else:
+            characters = []
+            for c in self.settings.characters:
+                try:
+                    characters.append(KanjiVG(c))
+                except InvalidCharacterError:
+                    pass
+        for kanji in characters:
             svg = self._modify_svg(kanji.svg)
             dst_file_path = os.path.join(self.settings.output_directory,
                 self._get_dst_filename(kanji))
@@ -349,7 +353,7 @@ class KanjiColorizer:
 
         >>> kc = KanjiColorizer('')
         >>> original_svg = codecs.open(
-        ...    os.path.join('test', 'kanjivg', 'kanji', '06f22.svg'),
+        ...    os.path.join(source_directory, '06f22.svg'),
         ...    'r', encoding='utf-8').read()
         >>> desired_svg = codecs.open(
         ...    os.path.join(
@@ -588,7 +592,6 @@ class InvalidCharacterError(Error):
 
 if __name__ == "__main__":
     import doctest
-    import sys
     import difflib
     import shutil
     doctest.testmod()

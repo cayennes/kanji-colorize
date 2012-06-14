@@ -59,10 +59,11 @@ Usage:
    the output directory you chose.
 
 If you want to try out your settings without spending the time
-processing the whole kanji collection, use ``test/kanjivg/kanji`` for the
-input directory.  It contains just four svgs.
+processing the whole kanji collection, use the ``--characters`` option
+(for example, ``python kanji_colorizer.py --characters 漢字``) to only
+color the specified characters.
 
-If you want to be able to run the script from anywhere, run ``python
+If you want to be able to run the script as ``kanji_colorize.py`` from anywhere, run ``python
 setup.py install``.
 
 Using with Anki
