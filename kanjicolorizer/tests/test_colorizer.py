@@ -174,5 +174,16 @@ class KanjiVGAsciiFilenameTest(unittest.TestCase):
         self.assertEqual(k.ascii_filename, '26951.svg')
 
 
+class KanjiVGCharacterFilenameTest(unittest.TestCase):
+
+    def test_without_variant_has_correct_filename(self):
+        k = KanjiVG(u'あ')
+        self.assertEqual(k.character_filename, u'あ.svg')
+
+    def test_with_variant_has_correct_filename(self):
+        k = KanjiVG(u'字', 'Kaisho')
+        self.assertEqual(k.character_filename, u'字-Kaisho.svg')
+
+
 if __name__ == "__main__":
     unittest.main()
