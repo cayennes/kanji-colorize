@@ -144,22 +144,9 @@ class KanjiVG(object):
         Returns a complete list of KanjiVG objects; everything there is
         data for
 
-        In the current partially-refactored state, the source directory
-        is set with the KanjiColorizer constructor
-        >>> throw_away = KanjiColorizer()  # use default
-        >>> long_kanji_list = KanjiVG.get_all()
-        >>> len(long_kanji_list)
-        11251
-        >>> throw_away_object = KanjiColorizer('--source-directory ' +
-        ...     os.path.join('test', 'kanjivg', 'kanji'))
-        >>>
-        >>> short_kanji_list = KanjiVG.get_all()
-        >>> for kanji in short_kanji_list:
-        ...     print(kanji.character)
-        あ
-        字
-        a
-        漢
+        >>> kanji_list = KanjiVG.get_all()
+        >>> kanji_list[0].__class__.__name__
+        'KanjiVG'
         '''
         kanji = []
         for file in os.listdir(source_directory):

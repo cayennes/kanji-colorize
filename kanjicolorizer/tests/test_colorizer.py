@@ -22,8 +22,12 @@
 
 import unittest
 from mock import patch
+import os
 from kanjicolorizer import colorizer
-from kanjicolorizer.colorizer import KanjiVG
+from kanjicolorizer.colorizer import KanjiVG, KanjiColorizer
+
+
+TOTAL_NUMBER_CHARACTERS = 11251
 
 
 class KanjiVGInitTest(unittest.TestCase):
@@ -184,6 +188,34 @@ class KanjiVGCharacterFilenameTest(unittest.TestCase):
         k = KanjiVG(u'字', 'Kaisho')
         self.assertEqual(k.character_filename, u'字-Kaisho.svg')
 
+
+class KanjiVGGetAllTest(unittest.TestCase):
+
+    def setUp(self):
+        '''
+        This is necessary to reset the source directory to default until
+        the --source-directory option is removed
+        '''
+        KanjiColorizer()
+
+    def test_has_correct_number(self):
+        all_kanji = KanjiVG.get_all()
+        self.assertEqual(len(all_kanji), TOTAL_NUMBER_CHARACTERS)
+
+    def test_first_is_a_kanji(self):
+        all_kanji = KanjiVG.get_all()
+        self.assertIsInstance(all_kanji[0], KanjiVG)
+
+    def test_alternate_source_directory_has_correct_number(self):
+        '''
+        This feature is going to go away soon, and is currently used
+        oddly.
+        '''
+        KanjiColorizer(
+            '--source-directory ' +
+            os.path.join('test', 'kanjivg', 'kanji'))
+        short_kanji_list = KanjiVG.get_all()
+        self.assertEqual(len(short_kanji_list), 4)
 
 if __name__ == "__main__":
     unittest.main()
