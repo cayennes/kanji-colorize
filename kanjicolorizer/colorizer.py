@@ -49,17 +49,21 @@ class KanjiVG(object):
         u'''
         Create a new KanjiVG object
 
+        Either give just the character
+
         >>> k1 = KanjiVG(u'漢')
         >>> print(k1.character)
         漢
         >>> k1.variant
+
+        Or if the character has a variant, give that as a second
+        argument
+
         >>> k2 = KanjiVG(u'字', 'Kaisho')
         >>> print(k2.character)
         字
         >>> k2.variant
         'Kaisho'
-        >>> u'漢' not in k2.svg
-        True
         '''
         self.character = character
         self.variant = variant
