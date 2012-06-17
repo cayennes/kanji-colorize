@@ -29,7 +29,7 @@ import os
 import colorsys
 import re
 import argparse
-import codecs
+from codecs import open
 from errno import ENOENT as FILE_NOT_FOUND
 import sys
 
@@ -80,7 +80,7 @@ class KanjiVG(object):
         if self.variant is None:
             self.variant = ''
         try:
-            with codecs.open(os.path.join(source_directory,
+            with open(os.path.join(source_directory,
                     self.ascii_filename), encoding='utf-8') as f:
                 self.svg = f.read()
         except IOError as e:  # file not found
@@ -314,10 +314,10 @@ class KanjiColorizer:
 
         These should be the correct files:
         >>> for file in os.listdir(test_output_dir):
-        ...     our_svg = codecs.open(
+        ...     our_svg = open(
         ...         os.path.join(test_output_dir, file),
         ...         'r', encoding='utf-8').read()
-        ...     desired_svg = codecs.open(
+        ...     desired_svg = open(
         ...         os.path.join('test', 'default_results',
         ...             'kanji-colorize-spectrum',  file),
         ...             'r', encoding='utf-8').read()
@@ -344,7 +344,7 @@ class KanjiColorizer:
             svg = self._modify_svg(kanji.svg)
             dst_file_path = os.path.join(self.settings.output_directory,
                 self._get_dst_filename(kanji))
-            with codecs.open(dst_file_path, 'w', encoding='utf-8') as f:
+            with open(dst_file_path, 'w', encoding='utf-8') as f:
                 f.write(svg)
 
     def _modify_svg(self, svg):
@@ -352,10 +352,10 @@ class KanjiColorizer:
         Applies all desired changes to the SVG
 
         >>> kc = KanjiColorizer('')
-        >>> original_svg = codecs.open(
+        >>> original_svg = open(
         ...    os.path.join(source_directory, '06f22.svg'),
         ...    'r', encoding='utf-8').read()
-        >>> desired_svg = codecs.open(
+        >>> desired_svg = open(
         ...    os.path.join(
         ...        'test', 'default_results', 'kanji-colorize-spectrum',
         ...        u'漢.svg'),
