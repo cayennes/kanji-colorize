@@ -1,10 +1,11 @@
 #!/usr/bin/env python2
-# -*- coding: UTF-8 -*-
-
+# -*- coding: utf-8 -*-
+#
 # colorizer.py is part of kanji-colorize which makes KanjiVG data
 # into colored stroke order diagrams
 #
 # Copyright 2012 Cayenne Boyer
+# Patches, clean-up Roland Sieker
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -25,29 +26,25 @@
 
 # Note: this module is in the middle of being refactored.
 
-import os
-import colorsys
-import re
-import argparse
 from codecs import open
 from errno import ENOENT as FILE_NOT_FOUND
+import argparse
+import colorsys
+import os
+import re
 import sys
-
-# Setup
 
 source_directory = os.path.join(os.path.dirname(__file__),
                                 'data', 'kanjivg', 'kanji')
 
 
-# Classes
-
 class KanjiVG(object):
-    '''
+    """
     Class to create kanji objects containing KanjiVG data and some more
     basic qualities of the character
-    '''
+    """
     def __init__(self, character, variant=''):
-        u'''
+        u"""
         Create a new KanjiVG object
 
         Either give just the character
@@ -74,7 +71,7 @@ class KanjiVG(object):
         Traceback (most recent call last):
             ...
         InvalidCharacterError: (u'\\u041b', '')
-        '''
+        """
         self.character = character
         self.variant = variant
         if self.variant is None:
@@ -91,20 +88,20 @@ class KanjiVG(object):
 
     @classmethod
     def _create_from_filename(cls, filename):
-        u'''
+        u"""
         Alternate constructor that uses a KanjiVG filename; used by
         get_all().
 
         >>> k = KanjiVG._create_from_filename('00061.svg')
         >>> k.character
         u'a'
-        '''
+        """
         m = re.match('^([0-9a-f]*)-?(.*?).svg$', filename)
         return cls(unichr(int(m.group(1), 16)), m.group(2))
 
     @property
     def ascii_filename(self):
-        u'''
+        u"""
         An SVG filename in ASCII using the same format KanjiVG uses.
 
         >>> k = KanjiVG(u'漢')
@@ -114,7 +111,7 @@ class KanjiVG(object):
         May raise InvalidCharacterError for some kinds of invalid
         character/variant combinations; this should only happen during
         KanjiVG object initialization.
-        '''
+        """
         try:
             code = '%05x' % ord(self.character)
         except TypeError:  # character not a character
@@ -126,13 +123,13 @@ class KanjiVG(object):
 
     @property
     def character_filename(self):
-        u'''
+        u"""
         An SVG filename that uses the unicode character
 
         >>> k = KanjiVG(u'漢')
         >>> print(k.character_filename)
         漢.svg
-        '''
+        """
         if not self.variant:
             return '%s.svg' % self.character
         else:
@@ -140,14 +137,14 @@ class KanjiVG(object):
 
     @classmethod
     def get_all(cls):
-        u'''
+        u"""
         Returns a complete list of KanjiVG objects; everything there is
         data for
 
         >>> kanji_list = KanjiVG.get_all()
         >>> kanji_list[0].__class__.__name__
         'KanjiVG'
-        '''
+        """
         kanji = []
         for file in os.listdir(source_directory):
             kanji.append(cls._create_from_filename(file))
@@ -181,14 +178,14 @@ class KanjiColorizer:
     """
 
     def __init__(self, argstring=''):
-        '''
+        """
         Creates a new instance of KanjiColorizer, which stores settings
         and provides various methods to produce colored kanji SVGs.
 
         Takes an option alrgument of with an argument string; see
         read_arg_string documentation for information on how this is
         used.
-        '''
+        """
         self._init_parser()
         self.read_arg_string(argstring)
 
@@ -454,11 +451,11 @@ class KanjiColorizer:
         """
         Add a comment about what this script has done to the copyright notice
 
-        >>> svg = '''<!--
+        >>> svg = """<!--
         ... Copyright (C) copyright holder (etc.)
         ... -->
         ... <svg> <! content> </svg>
-        ... '''
+        ... """
 
         This contains the notice:
 
@@ -476,8 +473,8 @@ class KanjiColorizer:
         0
         """
         note = """This file has been modified from the original version by the kanji_colorize.py
-script (available at http://github.com/cayennes/kanji-colorize) with these 
-settings: 
+script (available at http://github.com/cayennes/kanji-colorize) with these
+settings:
     mode: """ + self.settings.mode + """
     saturation: """ + str(self.settings.saturation) + """
     value: """ + str(self.settings.value) + """
@@ -507,12 +504,12 @@ The original SVG has the following copyright:
         """
         ratio = repr(float(self.settings.image_size) / 109)
         svg = svg.replace(
-            '109" height="109" viewBox="0 0 109 109', 
+            '109" height="109" viewBox="0 0 109 109',
             '{0}" height = "{0}" viewBox="0 0 {0} {0}'.format(
                 str(self.settings.image_size)))
         svg = re.sub(
-            '(<g id="kvg:Stroke.*?)(>)', 
-            r'\1 transform="scale(' + ratio + ',' + ratio + r')"\2', 
+            '(<g id="kvg:Stroke.*?)(>)',
+            r'\1 transform="scale(' + ratio + ',' + ratio + r')"\2',
             svg)
         return svg
 
@@ -574,17 +571,17 @@ The original SVG has the following copyright:
 # Exceptions
 
 class Error(Exception):
-    '''
+    """
     Base class for this module's exceptions
-    '''
+    """
     pass
 
 
 class InvalidCharacterError(Error):
-    '''
+    """
     Exception thrown when trying to initialize or use a character that
     there isn't data for
-    '''
+    """
     pass
 
 
