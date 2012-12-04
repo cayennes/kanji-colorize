@@ -282,17 +282,19 @@ kvg:type CDATA #IMPLIED >
         self._parser = argparse.ArgumentParser(description='Create a set of '
                                              'colored stroke order svgs')
         self._parser.add_argument('--mode', default='spectrum',
-                    choices=['spectrum', 'contrast'],
+                    choices=['spectrum', 'contrast', 'css'],
                     help='spectrum: color progresses evenly through the'
                         ' spectrum; nice for seeing the way the kanji is'
                         ' put together at a glance, but has the disadvantage'
                         ' of using similar colors for consecutive strokes '
                         'which can make it less clear which number goes '
-                        'with which stroke.  contrast: maximizes contrast '
+                        'with which stroke. contrast: maximizes contrast '
                         'among any group of consecutive strokes, using the '
                         'golden ratio; also provides consistency by using '
-                        'the same sequence for every kanji.  (default: '
-                        '%(default)s)')
+                        'the same sequence for every kanji. css: does no '
+                        'coloring, instead adds classes to the paths so that '
+                        'the kanji can be colorend with a style sheet. '
+                        '(default: %(default)s)')
         self._parser.add_argument('--saturation', default=0.95, type=float,
                     help='a decimal indicating saturation where 0 is '
                         'white/gray/black and 1 is completely  colorful '
@@ -443,7 +445,10 @@ kvg:type CDATA #IMPLIED >
         ...     print(line)
         ...
         """
-        self._color_svg()
+        if 'css' == self.settings.mode:
+            self._classes_svg()
+        else:
+            self._color_svg()
         self._resize_svg()
         # svg = self._comment_copyright(svg)
 
@@ -527,6 +532,50 @@ kvg:type CDATA #IMPLIED >
         for text_el in texts_list:
             text_el.set(
                 'style', 'stroke:{color}'.format(color=next(color_iterator)))
+
+    def _classes_svg(self):
+        """
+        Add classes to paths
+        """
+        for path_el in self.svg.getiterator('{{{ns}}}path'.format(ns=svg_ns)):
+            try:
+                id_ = path_el.get('id')
+            except KeyError:
+                print 'id-less path found'
+            else:
+                try:
+                    id_num = id_.split('-')[-1].lstrip('s')
+                except ValueError:
+                    print u'bad path id: {0}'.format(id_)
+                else:
+                    path_el.set(
+                        'class', 'stroke_path stroke_num{0}'.format(id_num))
+        for text_el in self.svg.getiterator('{{{ns}}}text'.format(ns=svg_ns)):
+            try:
+                text = text_el.text
+            except (KeyError, TypeError):
+                print 'text-less text'
+            else:
+                try:
+                    id_num = int(text)
+                except ValueError:
+                    print u'bad text, NAI: {0}'.format(text)
+                else:
+                    text_el.set(
+                        'class', 'stroke_number stroke_num{0}'.format(id_num))
+        for gr in self.svg.getiterator('{{{ns}}}g'.format(ns=svg_ns)):
+            try:
+                id_ = gr.get('id')
+            except KeyError:
+                print 'id-less group found'
+            else:
+                try:
+                    id_num = id_.split('-')[-1].lstrip('g')
+                except ValueError:
+                    print u'bad group id: {0}'.format(id_)
+                else:
+                    gr.set(
+                        'class', 'stroke_group group_num{0}'.format(id_num))
 
     def _header_copyright(self):
         """
