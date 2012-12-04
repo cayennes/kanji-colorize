@@ -33,9 +33,16 @@ import colorsys
 import os
 import re
 import sys
+import xml.etree.ElementTree as ET
 
 source_directory = os.path.join(os.path.dirname(__file__),
                                 'data', 'kanjivg', 'kanji')
+
+svg_ns = "http://www.w3.org/2000/svg"
+kvg_ns = "http://kanjivg.tagaini.net"
+
+ET.register_namespace('svg', svg_ns)
+ET.register_namespace('kvg', kvg_ns)
 
 
 class KanjiVG(object):
@@ -77,9 +84,11 @@ class KanjiVG(object):
         if self.variant is None:
             self.variant = ''
         try:
-            with open(os.path.join(source_directory,
-                    self.ascii_filename), encoding='utf-8') as f:
-                self.svg = f.read()
+            #with open(os.path.join(source_directory,
+            #        self.ascii_filename), encoding='utf-8') as f:
+            #    self.svg = ET.parse(f, encoding='utf-8').getroot()
+            self.svg = ET.parse(
+                os.path.join(source_directory, self.ascii_filename)).getroot()
         except IOError as e:  # file not found
             if e.errno == FILE_NOT_FOUND:
                 raise InvalidCharacterError(character, variant)
@@ -151,7 +160,7 @@ class KanjiVG(object):
         return kanji
 
 
-class KanjiColorizer:
+class KanjiColorizer(object):
     u"""
     Class that creates colored stroke order diagrams out of kanjivg
     data, and writes them to file.
@@ -188,6 +197,57 @@ class KanjiColorizer:
         """
         self._init_parser()
         self.read_arg_string(argstring)
+        # To re-add the coding declaration and the copyright notice ET
+        # swallows.
+        self.svg = None
+        self.settings = None
+        self.svg_header = u'''<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This file has been modified from the original version by the kanji_colorize.py
+script (available at http://github.com/cayennes/kanji-colorize) with these
+settings:
+    mode: {mode}
+    saturation: {saturation}
+    value: {value}
+    image_size: {image_size}
+It remains under a Creative Commons-Attribution-Share Alike 3.0 License.
+
+The original SVG has the following copyright:
+Copyright (C) 2009/2010/2011 Ulrich Apel.
+This work is distributed under the conditions of the Creative Commons
+Attribution-Share Alike 3.0 Licence. This means you are free:
+* to Share - to copy, distribute and transmit the work
+* to Remix - to adapt the work
+
+Under the following conditions:
+* Attribution. You must attribute the work by stating your use of KanjiVG in
+  your own copyright header and linking to KanjiVG's website
+  (http://kanjivg.tagaini.net)
+* Share Alike. If you alter, transform, or build upon this work, you may
+  distribute the resulting work only under the same or similar license to this
+  one.
+
+See http://creativecommons.org/licenses/by-sa/3.0/ for more details.
+-->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd" [
+<!ATTLIST g
+xmlns:kvg CDATA #FIXED "http://kanjivg.tagaini.net"
+kvg:element CDATA #IMPLIED
+kvg:variant CDATA #IMPLIED
+kvg:partial CDATA #IMPLIED
+kvg:original CDATA #IMPLIED
+kvg:part CDATA #IMPLIED
+kvg:number CDATA #IMPLIED
+kvg:tradForm CDATA #IMPLIED
+kvg:radicalForm CDATA #IMPLIED
+kvg:position CDATA #IMPLIED
+kvg:radical CDATA #IMPLIED
+kvg:phon CDATA #IMPLIED >
+<!ATTLIST path
+xmlns:kvg CDATA #FIXED "http://kanjivg.tagaini.net"
+kvg:type CDATA #IMPLIED >
+]>
+'''
 
     def _init_parser(self):
         r"""
@@ -293,9 +353,9 @@ class KanjiColorizer:
         54
 
         """
-        svg = KanjiVG(character).svg
-        svg = self._modify_svg(svg)
-        return svg
+        self.svg = KanjiVG(character).svg
+        self._modify_svg()
+        return self.svg
 
     def write_all(self):
         """
@@ -338,13 +398,15 @@ class KanjiColorizer:
                 except InvalidCharacterError:
                     pass
         for kanji in characters:
-            svg = self._modify_svg(kanji.svg)
+            self.svg = characters.svg
+            self._modify_svg()
             dst_file_path = os.path.join(self.settings.output_directory,
                 self._get_dst_filename(kanji))
             with open(dst_file_path, 'w', encoding='utf-8') as f:
-                f.write(svg)
+                f.write(self._header_copyright())
+                f.write(ET.tostring(self.svg))
 
-    def _modify_svg(self, svg):
+    def _modify_svg(self):
         u"""
         Applies all desired changes to the SVG
 
@@ -363,10 +425,9 @@ class KanjiColorizer:
         ...     print(line)
         ...
         """
-        svg = self._color_svg(svg)
-        svg = self._resize_svg(svg)
-        svg = self._comment_copyright(svg)
-        return svg
+        self._color_svg()
+        self._resize_svg()
+        # svg = self._comment_copyright(svg)
 
     # Private methods for working with files and directories
 
@@ -425,8 +486,9 @@ class KanjiColorizer:
         configuration from settings
 
         This adds a style attribute to path (stroke) and text (stroke
-        number) elements.  Both of these already have attributes, so we
-        can expect a space.  Not all SVGs include stroke numbers.
+        number) elements. We use ElementTree now, so we don't have to
+        worry about exact text properties. Not all SVGs include stroke
+        numbers.
 
         >>> svg = "<svg><path /><path /><text >1</text><text >2</text></svg>"
         >>> kc = KanjiColorizer('')
@@ -436,22 +498,23 @@ class KanjiColorizer:
         >>> kc._color_svg(svg)
         '<svg><path style="stroke:#bf0909" /><path style="stroke:#09bfbf" /></svg>'
         """
-        color_iterator = self._color_generator(self._stroke_count(svg))
+        paths_list = list(
+            self.svg.getiterator('{{{ns}}}path'.format(ns=svg_ns)))
+        texts_list = list(
+            self.svg.getiterator('{{{ns}}}text'.format(ns=svg_ns)))
+        color_iterator = self._color_generator(len(paths_list))
+        for path_el in paths_list:
+            path_el.set(
+                'style', 'stroke:{color}'.format(color=next(color_iterator)))
+        for text_el in texts_list:
+            text_el.set(
+                'style', 'stroke:{color}'.format(color=next(color_iterator)))
 
-        def color_match(match_object):
-            return (
-                match_object.re.pattern +
-                'style="stroke:' +
-                next(color_iterator) + '" ')
-
-        svg = re.sub('<path ', color_match, svg)
-        return re.sub('<text ', color_match, svg)
-
-    def _comment_copyright(self, svg):
+    def _header_copyright(self):
         """
-        Add a comment about what this script has done to the copyright notice
+        Return the xml preamble and a copyright comment.
 
-        >>> svg = '''<!--
+        >.>> svg = '''<!--
         ... Copyright (C) copyright holder (etc.)
         ... -->
         ... <svg> <! content> </svg>
@@ -459,36 +522,28 @@ class KanjiColorizer:
 
         This contains the notice:
 
-        >>> kc = KanjiColorizer('')
-        >>> kc._comment_copyright(svg).count('This file has been modified')
+        >.>> kc = KanjiColorizer('')
+        >.>> kc._header_copyright(svg).count('This file has been modified')
         1
 
         And depends on the settings it is run with:
 
-        >>> kc = KanjiColorizer('--mode contrast')
-        >>> kc._comment_copyright(svg).count('contrast')
+        >.>> kc = KanjiColorizer('--mode contrast')
+        >.>> kc._comment_copyright(svg).count('contrast')
         1
-        >>> kc = KanjiColorizer('--mode spectrum')
-        >>> kc._comment_copyright(svg).count('contrast')
+        >.>> kc = KanjiColorizer('--mode spectrum')
+        >.>> kc._comment_copyright(svg).count('contrast')
         0
         """
-        note = """This file has been modified from the original version by the kanji_colorize.py
-script (available at http://github.com/cayennes/kanji-colorize) with these
-settings:
-    mode: """ + self.settings.mode + """
-    saturation: """ + str(self.settings.saturation) + """
-    value: """ + str(self.settings.value) + """
-    image_size: """ + str(self.settings.image_size) + """
-It remains under a Creative Commons-Attribution-Share Alike 3.0 License.
-
-The original SVG has the following copyright:
-
-"""
-        place_before = "Copyright (C)"
-        return svg.replace(place_before, note + place_before)
+        return self.svg_header.format(
+                        {'note': self.settings.mode,
+                         'saturation': self.Settings.saturation,
+                         'value': self.Settings.value,
+                         'image_size': self.Settings.image_size})
 
     def _resize_svg(self, svg):
         """
+
         Resize the svg according to args.image_size, by changing the 109s
         in the <svg> attributes, and adding a transform scale to the
         groups enclosing the strokes and stroke numbers
@@ -502,16 +557,20 @@ The original SVG has the following copyright:
         >>> kc._resize_svg(svg)
         '<svg  width="327" height = "327" viewBox="0 0 327 327"><!109><g id="kvg:StrokePaths_" transform="scale(3.0,3.0)"><path /></g><g id="kvg:StrokeNumbers_" transform="scale(3.0,3.0)"><text /></g></svg>'
         """
-        ratio = repr(float(self.settings.image_size) / 109)
-        svg = svg.replace(
-            '109" height="109" viewBox="0 0 109 109',
-            '{0}" height = "{0}" viewBox="0 0 {0} {0}'.format(
-                str(self.settings.image_size)))
-        svg = re.sub(
-            '(<g id="kvg:Stroke.*?)(>)',
-            r'\1 transform="scale(' + ratio + ',' + ratio + r')"\2',
-            svg)
-        return svg
+        # That is what the width and height are for. And what we use the ET for.
+        self.svg.set('width', str(self.settings.image_size))
+        self.svg.set('height', str(self.settings.image_size))
+        # done.
+        #ratio = repr(float(self.settings.image_size) / 109)
+        #svg = svg.replace(
+        #    '109" height="109" viewBox="0 0 109 109',
+        #    '{0}" height = "{0}" viewBox="0 0 {0} {0}'.format(
+        #        str(self.settings.image_size)))
+        #svg = re.sub(
+        #    '(<g id="kvg:Stroke.*?)(>)',
+        #    r'\1 transform="scale(' + ratio + ',' + ratio + r')"\2',
+        #    svg)
+        #return svg
 
     # Private utility methods
 
