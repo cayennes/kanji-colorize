@@ -451,11 +451,11 @@ class KanjiColorizer:
         """
         Add a comment about what this script has done to the copyright notice
 
-        >>> svg = """<!--
+        >>> svg = '''<!--
         ... Copyright (C) copyright holder (etc.)
         ... -->
         ... <svg> <! content> </svg>
-        ... """
+        ... '''
 
         This contains the notice:
 
