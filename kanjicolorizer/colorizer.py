@@ -108,6 +108,18 @@ class KanjiVG(object):
         m = re.match('^([0-9a-f]*)-?(.*?).svg$', filename)
         return cls(unichr(int(m.group(1), 16)), m.group(2))
 
+    @classmethod
+    def _char_from_filename(cls, filename):
+        u"""
+        Munge a file name to a (kanji, variant) pair
+
+        >>> k = KanjiVG._create_from_filename('00061.svg')
+        >>> k.character
+        u'a'
+        """
+        m = re.match('^([0-9a-f]*)-?(.*?).svg$', filename)
+        return unichr(int(m.group(1), 16)), m.group(2)
+
     @property
     def ascii_filename(self):
         u"""
@@ -145,9 +157,9 @@ class KanjiVG(object):
             return '%s-%s.svg' % (self.character, self.variant)
 
     @classmethod
-    def get_all(cls):
+    def get_list(cls):
         u"""
-        Returns a complete list of KanjiVG objects; everything there is
+        Returns a complete list of characters,
         data for
 
         >>> kanji_list = KanjiVG.get_all()
@@ -156,7 +168,7 @@ class KanjiVG(object):
         """
         kanji = []
         for file in os.listdir(source_directory):
-            kanji.append(cls._create_from_filename(file))
+            kanji.append(cls._char_from_filename(file))
         return kanji
 
 
@@ -389,15 +401,21 @@ kvg:type CDATA #IMPLIED >
         """
         self._setup_dst_dir()
         if not self.settings.characters:
-            characters = KanjiVG.get_all()
+            characters = KanjiVG.get_list()
         else:
             characters = []
             for c in self.settings.characters:
-                try:
-                    characters.append(KanjiVG(c))
-                except InvalidCharacterError:
-                    pass
-        for kanji in characters:
+                base = c
+                variant = ''
+                if '-' in c:
+                    base = c.split('-')[0]
+                    variant = '-'.join(c.split('-')[1:])
+                characters.append((base, variant))
+        for k_base, var in characters:
+            try:
+                kanji = KanjiVG(k_base, var)
+            except InvalidCharacterError:
+                pass
             self.svg = kanji.svg
             self._modify_svg()
             dst_file_path = os.path.join(self.settings.output_directory,
