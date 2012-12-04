@@ -398,7 +398,7 @@ kvg:type CDATA #IMPLIED >
                 except InvalidCharacterError:
                     pass
         for kanji in characters:
-            self.svg = characters.svg
+            self.svg = kanji.svg
             self._modify_svg()
             dst_file_path = os.path.join(self.settings.output_directory,
                 self._get_dst_filename(kanji))
@@ -480,7 +480,7 @@ kvg:type CDATA #IMPLIED >
 
     # private methods for modifying svgs
 
-    def _color_svg(self, svg):
+    def _color_svg(self):
         """
         Color the svg with colors from _color_generator, which uses
         configuration from settings
@@ -535,13 +535,12 @@ kvg:type CDATA #IMPLIED >
         >.>> kc._comment_copyright(svg).count('contrast')
         0
         """
-        return self.svg_header.format(
-                        {'note': self.settings.mode,
-                         'saturation': self.Settings.saturation,
-                         'value': self.Settings.value,
-                         'image_size': self.Settings.image_size})
+        return self.svg_header.format(mode=self.settings.mode,
+                                      saturation=self.settings.saturation,
+                                      value=self.settings.value,
+                                      image_size=self.settings.image_size)
 
-    def _resize_svg(self, svg):
+    def _resize_svg(self):
         """
 
         Resize the svg according to args.image_size, by changing the 109s
@@ -573,18 +572,6 @@ kvg:type CDATA #IMPLIED >
         #return svg
 
     # Private utility methods
-
-    def _stroke_count(self, svg):
-        """
-        Return the number of strokes in the svg, based on occurences of
-        "<path "
-
-        >>> svg = "<svg><path /><path /><path /></svg>"
-        >>> kc = KanjiColorizer('')
-        >>> kc._stroke_count(svg)
-        3
-        """
-        return len(re.findall('<path ', svg))
 
     def _hsv_to_rgbhexcode(self, h, s, v):
         """
