@@ -259,6 +259,7 @@ kvg:phon CDATA #IMPLIED >
 xmlns:kvg CDATA #FIXED "http://kanjivg.tagaini.net"
 kvg:type CDATA #IMPLIED >
 ]>
+<?xml-stylesheet type="text/css" href="_kanji_style.css"?>
 '''
 
     def _init_parser(self):
@@ -313,6 +314,12 @@ kvg:type CDATA #IMPLIED >
                          'will be included; if this option is not '
                          'used, all characters will be included, '
                          'including variants')
+        self._parser.add_argument('-r','--relative', dest='rel_size',
+                                  action='store_true',
+                                  help='''Set the size to 100%%. It is up to \
+ the user of the svg to define a size. When using this the image-size \
+is ignored.''',
+                                  required=False)
         self._parser.add_argument('--filename-mode', default='character',
                     choices=['character', 'code'],
                     help='character: rename the files to use the '
@@ -570,9 +577,10 @@ kvg:type CDATA #IMPLIED >
                 print 'id-less group found'
             else:
                 try:
-                    id_num = id_.split('-')[-1].lstrip('g')
+                    id_num = int(id_.split('-')[-1].lstrip('g'))
                 except ValueError:
-                    print u'bad group id: {0}'.format(id_)
+                    pass
+                    # print u'bad group id: {0}'.format(id_)
                 else:
                     gr.set(
                         'class', 'stroke_group group_num{0}'.format(id_num))
@@ -624,19 +632,12 @@ kvg:type CDATA #IMPLIED >
         '<svg  width="327" height = "327" viewBox="0 0 327 327"><!109><g id="kvg:StrokePaths_" transform="scale(3.0,3.0)"><path /></g><g id="kvg:StrokeNumbers_" transform="scale(3.0,3.0)"><text /></g></svg>'
         """
         # That is what the width and height are for. And what we use the ET for.
-        self.svg.set('width', str(self.settings.image_size))
-        self.svg.set('height', str(self.settings.image_size))
-        # done.
-        #ratio = repr(float(self.settings.image_size) / 109)
-        #svg = svg.replace(
-        #    '109" height="109" viewBox="0 0 109 109',
-        #    '{0}" height = "{0}" viewBox="0 0 {0} {0}'.format(
-        #        str(self.settings.image_size)))
-        #svg = re.sub(
-        #    '(<g id="kvg:Stroke.*?)(>)',
-        #    r'\1 transform="scale(' + ratio + ',' + ratio + r')"\2',
-        #    svg)
-        #return svg
+        if self.settings.rel_size:
+            self.svg.set('width', '100%')
+            self.svg.set('height', '100%')
+        else:
+            self.svg.set('width', str(self.settings.image_size))
+            self.svg.set('height', str(self.settings.image_size))
 
     # Private utility methods
 
