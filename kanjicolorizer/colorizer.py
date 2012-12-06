@@ -40,9 +40,11 @@ source_directory = os.path.join(os.path.dirname(__file__),
 
 svg_ns = "http://www.w3.org/2000/svg"
 kvg_ns = "http://kanjivg.tagaini.net"
+xlink_ns = "http://www.w3.org/1999/xlink"
 
 ET.register_namespace('svg', svg_ns)
 ET.register_namespace('kvg', kvg_ns)
+ET.register_namespace('xlink', xlink_ns)
 
 
 class KanjiVG(object):
@@ -544,6 +546,16 @@ is ignored.''',
         """
         Add classes to paths
         """
+        # Tag the svg element. Makes it easier for the shadow script
+        # to find.
+        self.svg.set('id', 'kanjisvg')
+        # Load the script that does the shadow color by group.
+        # Run that script.
+        script_el = ET.SubElement(self.svg, '{{{ns}}}script'.format(ns=svg_ns))
+        script_el.set('type', 'text/ecmascript')
+        script_el.set('{{{ns}}}href'.format(ns=xlink_ns), '_kanji_script.js')
+        self.svg.set('onload', 'init(evt)')
+        # Now add the classes
         for path_el in self.svg.getiterator('{{{ns}}}path'.format(ns=svg_ns)):
             try:
                 id_ = path_el.get('id')
