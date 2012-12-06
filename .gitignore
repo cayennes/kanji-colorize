@@ -1,6 +1,7 @@
 *.zip
 *.pyc
 kanji-colorize-*
+colorized-kanji
 kanjivg
 kanji
 /build
