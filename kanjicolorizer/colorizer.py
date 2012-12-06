@@ -570,20 +570,18 @@ is ignored.''',
                 else:
                     text_el.set(
                         'class', 'stroke_number stroke_num{0}'.format(id_num))
-        for gr in self.svg.getiterator('{{{ns}}}g'.format(ns=svg_ns)):
-            try:
-                id_ = gr.get('id')
-            except KeyError:
-                print 'id-less group found'
-            else:
-                try:
-                    id_num = int(id_.split('-')[-1].lstrip('g'))
-                except ValueError:
-                    pass
-                    # print u'bad group id: {0}'.format(id_)
-                else:
-                    gr.set(
-                        'class', 'stroke_group group_num{0}'.format(id_num))
+        # Go through the kanji and mark only two levels as groups
+        group_count = 1
+        sub_group_count = 1
+        strokes_gr = self.svg.find('{{{ns}}}g'.format(ns=svg_ns))
+        kanji_gr = strokes_gr.find('{{{ns}}}g'.format(ns=svg_ns))
+        for gr in kanji_gr.findall('{{{ns}}}g'.format(ns=svg_ns)):
+            gr.set('class', 'stroke_group group_num{0}'.format(group_count))
+            group_count += 1
+            for sgr in gr.findall('{{{ns}}}g'.format(ns=svg_ns)):
+                sgr.set('class', 'stroke_subgroup subgroup_num{0}'.format(
+                        group_count))
+                sub_group_count += 1
 
     def _header_copyright(self):
         """
