@@ -451,8 +451,7 @@ kvg:type CDATA #IMPLIED >
         for k_base, var in characters:
             try:
                 kanji = KanjiVG(k_base, var)
-            except (ValueError, IOError, TypeError) as e:
-                print str(e)
+            except (ValueError, IOError, TypeError):
                 continue
             self.svg = kanji.svg
             self._modify_svg()
