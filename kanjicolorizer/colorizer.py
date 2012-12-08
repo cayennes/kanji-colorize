@@ -4,8 +4,7 @@
 # colorizer.py is part of kanji-colorize which makes KanjiVG data
 # into colored stroke order diagrams
 #
-# Copyright 2012 Cayenne Boyer
-# Patches, clean-up Roland Sieker
+# Copyright 2012 Cayenne Boyer, Roland Sieker
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -73,29 +72,21 @@ class KanjiVG(object):
         >>> k2.variant
         'Kaisho'
 
-        Raises InvalidCharacterError if the character and variant don't
-        correspond to known data
-
         >>> k = KanjiVG((u'Л'))
         Traceback (most recent call last):
             ...
-        InvalidCharacterError: (u'\\u041b', '')
+        IoError: (u'\\u041b', '')
         """
         self.character = character
         self.variant = variant
         if self.variant is None:
             self.variant = ''
-        try:
-            #with open(os.path.join(source_directory,
-            #        self.ascii_filename), encoding='utf-8') as f:
-            #    self.svg = ET.parse(f, encoding='utf-8').getroot()
-            self.svg = ET.parse(
-                os.path.join(source_directory, self.ascii_filename)).getroot()
-        except IOError as e:  # file not found
-            if e.errno == FILE_NOT_FOUND:
-                raise InvalidCharacterError(character, variant)
-            else:
-                raise
+        # Don't catch the IoError.
+        #with open(os.path.join(source_directory,
+        #        self.ascii_filename), encoding='utf-8') as f:
+        #    self.svg = ET.parse(f, encoding='utf-8').getroot()
+        self.svg = ET.parse(
+            os.path.join(source_directory, self.ascii_filename)).getroot()
 
     @classmethod
     def _create_from_filename(cls, filename):
@@ -130,15 +121,9 @@ class KanjiVG(object):
         >>> k = KanjiVG(u'漢')
         >>> k.ascii_filename
         '06f22.svg'
-
-        May raise InvalidCharacterError for some kinds of invalid
-        character/variant combinations; this should only happen during
-        KanjiVG object initialization.
         """
-        try:
-            code = '%05x' % ord(self.character)
-        except TypeError:  # character not a character
-            raise InvalidCharacterError(self.character, self.variant)
+        # Don't catch errors here.
+        code = '%05x' % ord(self.character)
         if not self.variant:
             return code + '.svg'
         else:
@@ -149,14 +134,26 @@ class KanjiVG(object):
         u"""
         An SVG filename that uses the unicode character
 
+        There are two exceptions:
+        * non-alphanumeric characters use the ascii_filename
+        * upper-case letters get an extra underscore at the beginning.
+        to avoid some (potential) file system problems.
+
         >>> k = KanjiVG(u'漢')
         >>> print(k.character_filename)
         漢.svg
         """
+        if not self.character.isalnum():
+            return self.ascii_filename
+        r_char = self.character
+        if r_char.isupper():
+            # This should trigger only for romaji, for kanji isupper()
+            # and islower() are both False.
+            r_char = u'_' + r_char
         if not self.variant:
-            return '%s.svg' % self.character
+            return u'{0}.svg'.format(r_char)
         else:
-            return '%s-%s.svg' % (self.character, self.variant)
+            return u'{0}-{1}.svg'.format(r_char, self.variant)
 
     @classmethod
     def get_list(cls):
@@ -200,7 +197,7 @@ class KanjiColorizer(object):
     KanjiVG class; more stuff will move to other classes before 0.6.
     """
 
-    def __init__(self, argstring=''):
+    def __init__(self, argstring='', config=None):
         """
         Creates a new instance of KanjiColorizer, which stores settings
         and provides various methods to produce colored kanji SVGs.
@@ -210,11 +207,12 @@ class KanjiColorizer(object):
         used.
         """
         self._init_parser()
+        self.settings = None
         self.read_arg_string(argstring)
+        self.read_config_dict(config)
+        self.svg = None
         # To re-add the coding declaration and the copyright notice ET
         # swallows.
-        self.svg = None
-        self.settings = None
         self.svg_header = u'''<?xml version="1.0" encoding="UTF-8"?>
 <!--
 This file has been modified from the original version by the kanji_colorize.py
@@ -223,7 +221,6 @@ settings:
     mode: {mode}
     saturation: {saturation}
     value: {value}
-    image_size: {image_size}
 It remains under a Creative Commons-Attribution-Share Alike 3.0 License.
 
 The original SVG has the following copyright:
@@ -306,22 +303,12 @@ kvg:type CDATA #IMPLIED >
                     help='a decimal indicating value where 0 is black '
                         'and 1 is colored or white '
                         '(default: %(default)s)')
-        self._parser.add_argument('--image-size', default=327, type=int,
-                    help="image size in pixels; they're square so this "
-                        'will be both height and width '
-                        '(default: %(default)s)')
         self._parser.add_argument('--characters', type=unicode,
                     help='a list of characters to include, without '
                          'spaces; if this option is used, no variants '
                          'will be included; if this option is not '
                          'used, all characters will be included, '
                          'including variants')
-        self._parser.add_argument('-r','--relative', dest='rel_size',
-                                  action='store_true',
-                                  help='''Set the size to 100%%. It is up to \
- the user of the svg to define a size. When using this the image-size \
-is ignored.''',
-                                  required=False)
         self._parser.add_argument('--filename-mode', default='character',
                     choices=['character', 'code'],
                     help='character: rename the files to use the '
@@ -361,7 +348,40 @@ is ignored.''',
         """
         self.settings = self._parser.parse_args(argstring.split())
 
-    def get_colored_svg(self, character):
+    def read_config_dict(self, cdict):
+        """
+        Parse options passed in as a dict.
+        """
+        # There is probably a more elegant way.
+        if not cdict:
+            return
+        try:
+            self.settings.mode = cdict['mode']
+        except KeyError:
+            pass
+        try:
+            self.settings.saturation = cdict['saturation']
+        except KeyError:
+            pass
+        try:
+            self.settings.value = cdict['value']
+        except KeyError:
+            pass
+        try:
+            self.settings.filename_mode = cdict['filename-mode']
+        except KeyError:
+            pass
+        try:
+            self.settings.characters = cdict['characters']
+        except KeyError:
+            pass
+        try:
+            self.settings.output_directory = cdict['output-directory']
+        except KeyError:
+            pass
+
+
+    def get_colored_svg(self, character=None, kvg=None):
         """
         Returns a string containing a colored stroke order diagram svg
         for character.
@@ -376,9 +396,15 @@ is ignored.''',
         54
 
         """
-        self.svg = KanjiVG(character).svg
+        if not kvg:
+            if character:
+                kvg = KanjiVG(character)
+            else:
+                return u''
+        self.svg = kvg.svg
         self._modify_svg()
-        return self.svg
+        return self._header_copyright() + ET.tostring(self.svg)
+
 
     def write_all(self):
         """
@@ -425,8 +451,9 @@ is ignored.''',
         for k_base, var in characters:
             try:
                 kanji = KanjiVG(k_base, var)
-            except InvalidCharacterError:
-                pass
+            except (ValueError, IOError, TypeError) as e:
+                print str(e)
+                continue
             self.svg = kanji.svg
             self._modify_svg()
             dst_file_path = os.path.join(self.settings.output_directory,
@@ -458,7 +485,7 @@ is ignored.''',
             self._classes_svg()
         else:
             self._color_svg()
-        self._resize_svg()
+        self._fix_svg_size()
         # svg = self._comment_copyright(svg)
 
     # Private methods for working with files and directories
@@ -598,56 +625,26 @@ is ignored.''',
     def _header_copyright(self):
         """
         Return the xml preamble and a copyright comment.
-
-        >.>> svg = '''<!--
-        ... Copyright (C) copyright holder (etc.)
-        ... -->
-        ... <svg> <! content> </svg>
-        ... '''
-
-        This contains the notice:
-
-        >.>> kc = KanjiColorizer('')
-        >.>> kc._header_copyright(svg).count('This file has been modified')
-        1
-
-        And depends on the settings it is run with:
-
-        >.>> kc = KanjiColorizer('--mode contrast')
-        >.>> kc._comment_copyright(svg).count('contrast')
-        1
-        >.>> kc = KanjiColorizer('--mode spectrum')
-        >.>> kc._comment_copyright(svg).count('contrast')
-        0
         """
         return self.svg_header.format(mode=self.settings.mode,
                                       saturation=self.settings.saturation,
-                                      value=self.settings.value,
-                                      image_size=self.settings.image_size)
+                                      value=self.settings.value)
 
-    def _resize_svg(self):
+    def _fix_svg_size(self):
         """
+        Set the svg size to 100%.
 
-        Resize the svg according to args.image_size, by changing the 109s
-        in the <svg> attributes, and adding a transform scale to the
-        groups enclosing the strokes and stroke numbers
-
-        >>> svg = '<svg  width="109" height="109" viewBox="0 0 109 109"><!109><g id="kvg:StrokePaths_"><path /></g></svg>'
-        >>> kc = KanjiColorizer('--image-size 100')
-        >>> kc._resize_svg(svg)
-        '<svg  width="100" height = "100" viewBox="0 0 100 100"><!109><g id="kvg:StrokePaths_" transform="scale(0.9174311926605505,0.9174311926605505)"><path /></g></svg>'
-        >>> svg = '<svg  width="109" height="109" viewBox="0 0 109 109"><!109><g id="kvg:StrokePaths_"><path /></g><g id="kvg:StrokeNumbers_"><text /></g></svg>'
-        >>> kc = KanjiColorizer('--image-size 327')
-        >>> kc._resize_svg(svg)
-        '<svg  width="327" height = "327" viewBox="0 0 327 327"><!109><g id="kvg:StrokePaths_" transform="scale(3.0,3.0)"><path /></g><g id="kvg:StrokeNumbers_" transform="scale(3.0,3.0)"><text /></g></svg>'
+        Set the width and height of the svg to 100%.  The displayer is
+        responsible for setting the size ey wants, for example by
+        using '<embed width="n" height="n" src="NN.svg" />'.
         """
-        # That is what the width and height are for. And what we use the ET for.
-        if self.settings.rel_size:
-            self.svg.set('width', '100%')
-            self.svg.set('height', '100%')
-        else:
-            self.svg.set('width', str(self.settings.image_size))
-            self.svg.set('height', str(self.settings.image_size))
+        # Set the width and height to 100% and let the displayer set
+        # the real size we want.
+        self.svg.set('width', '100%')
+        self.svg.set('height', '100%')
+        # (There is really no need to add a scaling to each graphical
+        # element, when you want a fixed size, you can set this in
+        # pixels in width and height here.)
 
     # Private utility methods
 
@@ -691,22 +688,6 @@ is ignored.''',
                 yield self._hsv_to_rgbhexcode(float(i) / n,
                     self.settings.saturation, self.settings.value)
 
-
-# Exceptions
-
-class Error(Exception):
-    """
-    Base class for this module's exceptions
-    """
-    pass
-
-
-class InvalidCharacterError(Error):
-    """
-    Exception thrown when trying to initialize or use a character that
-    there isn't data for
-    """
-    pass
 
 
 # Test if run
