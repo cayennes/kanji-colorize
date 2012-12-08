@@ -55,7 +55,7 @@ config_dict = {
 # 'contrast': maximizes the contrast among any group of consecutive
 #            strokes, using the golden ratio; also provides consistency
 #            by using the same sequence for every kanji
-# 'css':       the colors are not stored in the svg file at all, but defined
+# 'css':     the colors are not stored in the svg file itself, but defined
 #            in the file "_kanji_style.css" in the collection.media
 #            folder. The colors can be changed at any time in that
 #            file.
@@ -127,28 +127,28 @@ def kanjiToAdd(note, currentFieldIndex=None):
     return srcTxt
 
 
-def addKanji(note, flag=False, currentFieldIndex=None):
+def addKanji(note, flag=False, currentFieldIndex=None, regenerate=False):
     '''
     Checks to see if a kanji should be added, and adds it if so.
     '''
     character = kanjiToAdd(note, currentFieldIndex)
     if character is None:
         return flag
-    print u'chr: {}'.format(character)
     # write to file; To be sure use the media directory
     # explicitly. (This may not be necessary.)
-    kvg = KanjiVG(character)
-    print u'got kvg'
+    try:
+        kvg = KanjiVG(character)
+    except (ValueError, IOError, TypeError):
+        return flag
     file_name = kvg.character_filename
-    print u'file_name: {}'.format(file_name)
     file_path = os.path.join(mw.col.media.dir(), file_name)
-    print u'file_path: {}'.format(file_path)
-    with open(file_path, 'w') as out_file:
-        print u'wopen'
-        out_file.write(kc.get_colored_svg(kvg=kvg))
-        # I guess the abspath is not needed (any more).
-        mw.col.media.addFile(os.path.abspath(file_path))
-        note[dstField] = u'''<embed width="{size}" height="{size}" \
+    if regenerate or not os.path.exists(file_path):
+        try:
+            with open(file_path, 'w') as out_file:
+                out_file.write(kc.get_colored_svg(kvg=kvg))
+        except IOError:
+            return flag
+    note[dstField] = u'''<embed width="{size}" height="{size}" \
 src="{src}">'''.format(size=config_dict['image-size'], src=file_name)
     note.flush()
     return True
@@ -172,20 +172,20 @@ def maybe_copy_style():
     """
     if not 'css' == config_dict['mode']:
         return
-    if not os.path.exists(os.path.join(mw.col.media.dir(),'_kanji_style.css')):
+    if not os.path.exists(os.path.join(
+            mw.col.media.dir(), '_kanji_style.css')):
         shutil.copy(
+            os.path.join(mw.pm.addonFolder(), 'kanjicolorizer', 'extra',
+                         '_kanji_style.css'),
             os.path.join(
-                mw.pm.addonFolder(), kanji_directory, '_kanji_style.css'),
-            os.path.join(
-                mw.col.media.dir(),'_kanji_style.css'))
-        mw.col.media.addFile(mw.col.media.dir(),'_kanji_style.css')
-    if not os.path.exists(os.path.join(mw.col.media.dir(),'_kanji_script.js')):
+                mw.col.media.dir(), '_kanji_style.css'))
+    if not os.path.exists(os.path.join(
+            mw.col.media.dir(), '_kanji_script.js')):
         shutil.copy(
+            os.path.join(mw.pm.addonFolder(), 'kanjicolorizer', 'extra',
+                         '_kanji_script.js'),
             os.path.join(
-                mw.pm.addonFolder(), kanji_directory, '_kanji_script.js'),
-            os.path.join(
-                mw.col.media.dir(),'_kanji_script.js'))
-        mw.col.media.addFile(mw.col.media.dir(),'_kanji_script.js')
+                mw.col.media.dir(), '_kanji_script.js'))
 
 addHook("profileLoaded", maybe_copy_style)
 
@@ -202,7 +202,7 @@ def regenerate_all():
     # Find the notes in those models and give them kanji
     for model in models:
         for nid in mw.col.models.nids(model):
-            addKanji(mw.col.getNote(nid))
+            addKanji(mw.col.getNote(nid), regenerate=True)
     showInfo("Done regenerating colorized kanji diagrams!")
 
 # add menu item
