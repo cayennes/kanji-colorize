@@ -146,10 +146,10 @@ class KanjiVG(object):
         if not self.character.isalnum():
             return self.ascii_filename
         r_char = self.character
-        if r_char.isupper():
+        if r_char.islower():
             # This should trigger only for romaji, for kanji isupper()
             # and islower() are both False.
-            r_char = u'_' + r_char
+            r_char = r_char + u'_'
         if not self.variant:
             return u'{0}.svg'.format(r_char)
         else:
