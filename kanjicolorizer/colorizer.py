@@ -136,7 +136,7 @@ class KanjiVG(object):
 
         There are two exceptions:
         * non-alphanumeric characters use the ascii_filename
-        * upper-case letters get an extra underscore at the beginning.
+        * lower-case letters get an extra underscore at the end.
         to avoid some (potential) file system problems.
 
         >>> k = KanjiVG(u'漢')
