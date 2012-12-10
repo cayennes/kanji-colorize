@@ -286,10 +286,6 @@ class KanjiColorizer:
         Returns a string containing a colored stroke order diagram svg
         for character.
 
-        (This doctest looked for the 00061 at 1783, but my emacs has
-        deleted two trailing whitespaces, so it should be two chars
-        earlier. ospalh 2012-12-10)
-
         >>> kc = KanjiColorizer()
         >>> svg = kc.get_colored_svg('a')
         >>> svg.splitlines()[0]
