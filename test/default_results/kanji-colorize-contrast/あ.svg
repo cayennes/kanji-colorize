@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 This file has been modified from the original version by the kanji_colorize.py
-script (available at http://github.com/cayennes/kanji-colorize) with these 
-settings: 
+script (available at http://github.com/cayennes/kanji-colorize) with these
+settings:
     mode: contrast
     saturation: 0.95
     value: 0.75
