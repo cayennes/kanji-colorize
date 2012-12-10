@@ -74,8 +74,8 @@ class KanjiVG(object):
 
         >>> k = KanjiVG((u'Л'))
         Traceback (most recent call last):
-            ...
-        IoError: (u'\\u041b', '')
+           ...
+        IOError: [Errno 2] No such file or directory: './kanjicolorizer/data/kanjivg/kanji/0041b.svg'
         """
         self.character = character
         self.variant = variant
@@ -163,7 +163,11 @@ class KanjiVG(object):
 
         >>> kanji_list = KanjiVG.get_list()
         >>> kanji_list[0].__class__.__name__
-        'KanjiVG'
+        'tuple'
+        >>> type(kanji_list[0][0])
+        <type 'unicode'>
+        >>> type(kanji_list[0][1])
+        <type 'str'>
         """
         kanji = []
         for file in os.listdir(source_directory):
@@ -391,7 +395,7 @@ kvg:type CDATA #IMPLIED >
         >>> svg.splitlines()[0]
         u'<?xml version="1.0" encoding="UTF-8"?>'
         >>> svg.find('00061')
-        1781
+        1830
         >>> svg.find('has been modified')
         54
 
@@ -483,13 +487,16 @@ kvg:type CDATA #IMPLIED >
         >>> original_svg = open(
         ...    os.path.join(source_directory, '06f22.svg'),
         ...    'r', encoding='utf-8').read()
+        >>> kc.svg = ET.parse(os.path.join(source_directory, '06f22.svg')).getroot()
+        >>> kc._modify_svg()
+        >>> modified_svg = ET.tostring(kc.svg)
         >>> desired_svg = open(
         ...    os.path.join(
         ...        'test', 'default_results', 'kanji-colorize-spectrum',
-        ...        u'漢.svg'),
+        ...        u'漢_noheader.svg'),
         ...    'r', encoding='utf-8').read()
         >>> for line in difflib.context_diff(
-        ...        kc._modify_svg(original_svg).splitlines(1),
+        ...        modified_svg.splitlines(1),
         ...        desired_svg.splitlines(1)):
         ...     print(line)
         ...
@@ -542,7 +549,7 @@ kvg:type CDATA #IMPLIED >
         '00061.svg'
         >>> kc = KanjiColorizer('--filename-mode character')
         >>> kc._get_dst_filename(KanjiVG('a'))
-        'a.svg'
+        u'a_.svg'
 
         """
         if (self.settings.filename_mode == 'character'):
@@ -562,13 +569,15 @@ kvg:type CDATA #IMPLIED >
         worry about exact text properties. Not all SVGs include stroke
         numbers.
 
-        >>> svg = "<svg><path /><path /><text >1</text><text >2</text></svg>"
         >>> kc = KanjiColorizer('')
-        >>> kc._color_svg(svg)
-        '<svg><path style="stroke:#bf0909" /><path style="stroke:#09bfbf" /><text style="stroke:#bf0909" >1</text><text style="stroke:#09bfbf" >2</text></svg>'
-        >>> svg = "<svg><path /><path /></svg>"
-        >>> kc._color_svg(svg)
-        '<svg><path style="stroke:#bf0909" /><path style="stroke:#09bfbf" /></svg>'
+        >>> kc.svg = ET.fromstring('<svg:svg  xmlns:svg="http://www.w3.org/2000/svg"><svg:path /><svg:path /><svg:text >1</svg:text><svg:text >2</svg:text></svg:svg>')
+        >>> kc._color_svg()
+        >>> ET.tostring(kc.svg)
+        '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:path style="stroke:#bf0909" /><svg:path style="stroke:#09bfbf" /><svg:text style="stroke:#bf0909">1</svg:text><svg:text style="stroke:#09bfbf">2</svg:text></svg:svg>'
+        >>> kc.svg = ET.fromstring('<svg:svg  xmlns:svg="http://www.w3.org/2000/svg"><svg:path /><svg:path /></svg:svg>')
+        >>> kc._color_svg()
+        >>> ET.tostring(kc.svg)
+        '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:path style="stroke:#bf0909" /><svg:path style="stroke:#09bfbf" /></svg:svg>'
         """
         paths_list = list(
             self.svg.getiterator('{{{ns}}}path'.format(ns=svg_ns)))
