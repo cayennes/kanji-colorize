@@ -1,5 +1,5 @@
 #!/usr/bin/env python2
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 
 # colorizer.py is part of kanji-colorize which makes KanjiVG data
 # into colored stroke order diagrams
@@ -291,7 +291,7 @@ class KanjiColorizer:
         >>> svg.splitlines()[0]
         u'<?xml version="1.0" encoding="UTF-8"?>'
         >>> svg.find('00061')
-        1783
+        1781
         >>> svg.find('has been modified')
         54
 
@@ -335,9 +335,27 @@ class KanjiColorizer:
             characters = KanjiVG.get_all()
         else:
             characters = []
+            if ',' in self.settings.characters \
+                    and len(self.settings.characters) > 1:
+                # Make it possible to specify variants, accept (a
+                # single line of) csv. (A single ',' stays a comma. If
+                # you want to convert a comma and other characters,
+                # use two calls.)
+                # The split transforms the string to a list. But we
+                # don't really care.
+                self.settings.characters = self.settings.characters.split(',')
             for c in self.settings.characters:
+                var = ''
+                if '-' in c:
+                    # We have a variety.
+                    # Typically "c, var = c.split('-') should
+                    # work. Make sure it still works when we have a
+                    # variety with an extra dash.
+                    varsplit = c.split('-')
+                    c = varsplit[0]
+                    var = '-'.join(varsplit[1:])
                 try:
-                    characters.append(KanjiVG(c))
+                    characters.append(KanjiVG(c, var))
                 except InvalidCharacterError:
                     pass
         for kanji in characters:
@@ -476,8 +494,8 @@ class KanjiColorizer:
         0
         """
         note = """This file has been modified from the original version by the kanji_colorize.py
-script (available at http://github.com/cayennes/kanji-colorize) with these 
-settings: 
+script (available at http://github.com/cayennes/kanji-colorize) with these
+settings:
     mode: """ + self.settings.mode + """
     saturation: """ + str(self.settings.saturation) + """
     value: """ + str(self.settings.value) + """
@@ -507,12 +525,12 @@ The original SVG has the following copyright:
         """
         ratio = repr(float(self.settings.image_size) / 109)
         svg = svg.replace(
-            '109" height="109" viewBox="0 0 109 109', 
+            '109" height="109" viewBox="0 0 109 109',
             '{0}" height = "{0}" viewBox="0 0 {0} {0}'.format(
                 str(self.settings.image_size)))
         svg = re.sub(
-            '(<g id="kvg:Stroke.*?)(>)', 
-            r'\1 transform="scale(' + ratio + ',' + ratio + r')"\2', 
+            '(<g id="kvg:Stroke.*?)(>)',
+            r'\1 transform="scale(' + ratio + ',' + ratio + r')"\2',
             svg)
         return svg
 
