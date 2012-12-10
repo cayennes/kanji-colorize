@@ -1,10 +1,10 @@
 #!/usr/bin/env python2
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 
 # test_colorizer.py is part of kanji-colorize which makes KanjiVG data
 # into colored stroke order diagrams
 #
-# Copyright 2012 Cayenne Boyer
+# Copyright 2012 Cayenne Boyer, Roland Sieker
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -25,6 +25,7 @@ from mock import MagicMock, patch
 import os
 from kanjicolorizer import colorizer
 from kanjicolorizer.colorizer import KanjiVG, KanjiColorizer
+import xml.etree.ElementTree
 
 TOTAL_NUMBER_CHARACTERS = 11251
 
@@ -98,21 +99,14 @@ class KanjiVGInitTest(unittest.TestCase):
 
     def test_with_mismatched_variant_raises_correct_exception(self):
         self.assertRaises(
-            colorizer.InvalidCharacterError,
-            KanjiVG,
-            (u'漢', 'Kaisho'))
+            colorizer.InvalidCharacterError, KanjiVG, (u'漢', 'Kaisho'))
 
     def test_empty_variant_raises_correct_exception(self):
         self.assertRaises(
-            colorizer.InvalidCharacterError,
-            KanjiVG,
-            (u'字', ''))
+            colorizer.InvalidCharacterError, KanjiVG, (u'字', ''))
 
     def test_with_too_few_parameters_raises_correct_exception(self):
-        self.assertRaises(
-            colorizer.InvalidCharacterError,
-            KanjiVG,
-            ())
+        self.assertRaises(colorizer.InvalidCharacterError, KanjiVG, ())
 
     def test_permission_denied_error_propogated(self):
         '''
@@ -121,10 +115,7 @@ class KanjiVGInitTest(unittest.TestCase):
         '''
         with patch('__builtin__.open') as mock_open:
             mock_open.side_effect = IOError(31, 'Permission denied')
-            self.assertRaises(
-                IOError,
-                KanjiVG,
-                ('a'))
+            self.assertRaises(IOError, KanjiVG, ('a'))
 
 
 class KanjiVGCreateFromFilenameTest(unittest.TestCase):
@@ -148,18 +139,13 @@ class KanjiVGCreateFromFilenameTest(unittest.TestCase):
         As a private method, the precise exception is unimportant
         '''
         self.assertRaises(
-            Exception,
-            KanjiVG._create_from_filename,
-            '10000.svg')
+            Exception, KanjiVG._create_from_filename, '10000.svg')
 
     def test_incorrect_format_raises_exception(self):
         '''
         As a private method, the precise exception is unimportant
         '''
-        self.assertRaises(
-            Exception,
-            KanjiVG._create_from_filename,
-            '5b57')
+        self.assertRaises(Exception, KanjiVG._create_from_filename, '5b57')
 
 
 class KanjiVGAsciiFilenameTest(unittest.TestCase):
@@ -188,22 +174,41 @@ class KanjiVGCharacterFilenameTest(unittest.TestCase):
         self.assertEqual(k.character_filename, u'字-Kaisho.svg')
 
 
-class KanjiVGGetAllTest(unittest.TestCase):
+# class KanjiVGGetAllTest(unittest.TestCase):
+# The code has changed. Now we only get a list, and load the ETs
+# later.
+class KanjiVGGetListTest(unittest.TestCase):
 
     def test_has_correct_number(self):
-        all_kanji = KanjiVG.get_all()
+        all_kanji = KanjiVG.get_list()
         self.assertEqual(len(all_kanji), TOTAL_NUMBER_CHARACTERS)
 
-    def test_first_is_a_kanji(self):
-        all_kanji = KanjiVG.get_all()
-        self.assertIsInstance(all_kanji[0], KanjiVG)
+    def test_first_is_a_string_pair(self):
+        all_kanji = KanjiVG.get_list()
+        first_pair = all_kanji[0]
+        self.assertIsInstance(first_pair, tuple)
+        self.assertEqual(len(first_pair), 2)
+        self.assertIsInstance(first_pair[0], str)
+        self.assertIsInstance(first_pair[1], str)
 
 
 class KanjiColorizerCharactersOptionTest(unittest.TestCase):
 
     def setUp(self):
-        # replace the open function with a mock; reading any file will
-        # return ''
+        # For the new version using ElementTree, don't patch open,
+        # patch ET.parse instead. It now returns an empty ElementTree.
+        patch_parse = patch('xml.etree.ElementTree.parse')
+        self.mock_parse = patch_parse.start()
+        self.addCleanup(patch_parse.stop)
+#        self.mock_parse.return_value = MagicMock(spec=xml.etree.ElementTree.ElementTree)
+#        self.mock_parse.return_value.read = MagicMock(
+#            return_value=xml.etree.ElementTree.ElementTree(
+#                xml.etree.ElementTree.Element('svg')))
+        self.mock_parse.return_value =xml.etree.ElementTree.ElementTree(
+                xml.etree.ElementTree.Element('svg'))
+
+        ## replace the open function with a mock; reading any file will
+        ## return ''
         patch_open = patch('__builtin__.open')
         self.mock_open = patch_open.start()
         self.addCleanup(patch_open.stop)
