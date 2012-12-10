@@ -8,6 +8,11 @@ kanji
 /dist
 MANIFEST
 
+# Some emacs temp files.
+*~
+\#*
+.#*
+
 !/test/kanivg
 !/test/kanivg/kanji
 !/test/default_results/kanji-colorize-contrast
