@@ -8,10 +8,10 @@ kanji
 /dist
 MANIFEST
 
-# Some emacs temp files.
+# Emacs temp files:
 *~
-\#*
 .#*
+\#*
 
 !/test/kanivg
 !/test/kanivg/kanji

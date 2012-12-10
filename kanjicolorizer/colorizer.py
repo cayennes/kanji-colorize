@@ -92,7 +92,7 @@ class KanjiVG(object):
     def _create_from_filename(cls, filename):
         u"""
         Alternate constructor that uses a KanjiVG filename; used by
-        get_all().
+        get_list().
 
         >>> k = KanjiVG._create_from_filename('00061.svg')
         >>> k.character
@@ -161,7 +161,7 @@ class KanjiVG(object):
         Returns a complete list of characters,
         data for
 
-        >>> kanji_list = KanjiVG.get_all()
+        >>> kanji_list = KanjiVG.get_list()
         >>> kanji_list[0].__class__.__name__
         'KanjiVG'
         """
@@ -391,7 +391,7 @@ kvg:type CDATA #IMPLIED >
         >>> svg.splitlines()[0]
         u'<?xml version="1.0" encoding="UTF-8"?>'
         >>> svg.find('00061')
-        1783
+        1781
         >>> svg.find('has been modified')
         54
 
@@ -441,12 +441,26 @@ kvg:type CDATA #IMPLIED >
             characters = KanjiVG.get_list()
         else:
             characters = []
+            if ',' in self.settings.characters \
+                    and len(self.settings.characters) > 1:
+                # Make it possible to specify variants, accept (a
+                # single line of) csv. (A single ',' stays a comma. If
+                # you want to convert a comma and other characters,
+                # use two calls.)
+                # The split transforms the string to a list. But we
+                # don't really care.
+                self.settings.characters = self.settings.characters.split(',')
             for c in self.settings.characters:
                 base = c
                 variant = ''
                 if '-' in c:
-                    base = c.split('-')[0]
-                    variant = '-'.join(c.split('-')[1:])
+                    # We have a variety.
+                    # Typically "c, var = c.split('-') should
+                    # work. Make sure it still works when we have a
+                    # variety with an extra dash.
+                    varsplit = c.split('-')
+                    base = varsplit[0]
+                    variant = '-'.join(varsplit[1:])
                 characters.append((base, variant))
         for k_base, var in characters:
             try:
