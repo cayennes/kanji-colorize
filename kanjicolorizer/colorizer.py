@@ -481,7 +481,12 @@ kvg:type CDATA #IMPLIED >
 
     def _modify_svg(self):
         u"""
-        Applies all desired changes to the SVG
+        Applies desired changes to the SVG
+
+        This sets the size and adds either the stroke colors or the
+        classes and css files in the SVG.  The ElementTree
+        representation does not contain the header. That is added by
+        get_colored_svg() or write_all()
 
         >>> kc = KanjiColorizer('')
         >>> original_svg = open(
@@ -506,7 +511,6 @@ kvg:type CDATA #IMPLIED >
         else:
             self._color_svg()
         self._fix_svg_size()
-        # svg = self._comment_copyright(svg)
 
     # Private methods for working with files and directories
 
@@ -609,12 +613,12 @@ kvg:type CDATA #IMPLIED >
             try:
                 id_ = path_el.get('id')
             except KeyError:
-                print 'id-less path found'
+                pass
             else:
                 try:
                     id_num = id_.split('-')[-1].lstrip('s')
                 except ValueError:
-                    print u'bad path id: {0}'.format(id_)
+                    pass
                 else:
                     path_el.set(
                         'class', 'stroke_path stroke_num{0}'.format(id_num))
@@ -622,12 +626,12 @@ kvg:type CDATA #IMPLIED >
             try:
                 text = text_el.text
             except (KeyError, TypeError):
-                print 'text-less text'
+                pass
             else:
                 try:
                     id_num = int(text)
                 except ValueError:
-                    print u'bad text, NAI: {0}'.format(text)
+                    pass
                 else:
                     text_el.set(
                         'class', 'stroke_number stroke_num{0}'.format(id_num))
