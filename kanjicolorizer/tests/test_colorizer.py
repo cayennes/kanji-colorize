@@ -48,10 +48,16 @@ class KanjiVGInitTest(unittest.TestCase):
 
     def test_valid_ascii_character_contains_named_stroke_group(self):
         '''
+        test_valid_ascii_character_contains_named_stroke_group
+
         This is a proxy for having read the correct file
         '''
         k = KanjiVG('a')
-        self.assertIn('kvg:StrokePaths_00061', k.svg)
+        self.assertEqual(
+            k.svg.find('{{{ns}}}g'.format(ns=svg_ns)).get('id'),
+            'kvg:StrokePaths_00061')
+
+        # self.assertIn('kvg:StrokePaths_00061', k.svg)
 
     def test_valid_nonascii_character_inits(self):
         k = KanjiVG(u'あ')
@@ -60,10 +66,14 @@ class KanjiVGInitTest(unittest.TestCase):
 
     def test_valid_nonascii_character_contains_named_stroke_group(self):
         '''
+        test_valid_nonascii_character_contains_named_stroke_group
+
         This is a proxy for having read the correct file
         '''
         k = KanjiVG(u'あ')
-        self.assertIn('kvg:StrokePaths_03042', k.svg)
+        self.assertEqual(
+            k.svg.find('{{{ns}}}g'.format(ns=svg_ns)).get('id'),
+            'kvg:StrokePaths_03042')
 
     def test_valid_variant_inits(self):
         k = KanjiVG(u'字', 'Kaisho')
@@ -72,6 +82,8 @@ class KanjiVGInitTest(unittest.TestCase):
 
     def test_valid_variant_contains_group_with_stroke_paths_id(self):
         '''
+        test_valid_variant_contains_group_with_stroke_paths_id
+
         This is a proxy for having read the correct file
         '''
         k = KanjiVG(u'字', 'Kaisho')
@@ -90,40 +102,48 @@ class KanjiVGInitTest(unittest.TestCase):
     def test_with_invalid_character_raises_ioerror(self):
         # KanjiVg no doesn't modify the exceptions. Non-existant
         # characters now give an IOError.
-        with self.assertRaises(IOError) as ioe:
+        with self.assertRaises(IOError) as ioe_c:
             KanjiVG(u'Л')
-        self.assertIn('No such file or directory', str(ioe))
-        self.assertIn('data/kanjivg/kanji/0041b.svg', str(ioe))
+        self.assertIn('No such file or directory', str(ioe_c.exception))
+        self.assertIn('data/kanjivg/kanji/0041b.svg', str(ioe_c.exception))
 
-    def test_with_multiple_characters_raises_correct_exception(self):
-        self.assertRaises(
-            colorizer.InvalidCharacterError,
-            KanjiVG,
-            (u'漢字'))
+    def test_with_multiple_characters_raises_typeerror(self):
+        # KanjiVg no doesn't modify the exceptions. This now gives a
+        # TypeError.
+        with self.assertRaises(TypeError) as type_e_c:
+            KanjiVG(u'漢字')
+        self.assertIn('expected a character', str(type_e_c.exception))
+        self.assertIn('string of length 2 found', str(type_e_c.exception))
 
-    def test_with_nonexistent_variant_raises_correct_ex_args(self):
-        with self.assertRaises(colorizer.InvalidCharacterError) as cm:
+    def test_with_nonexistent_variant_raises_ioerror(self):
+        with self.assertRaises(IOError) as ioe_c:
             KanjiVG(u'字', 'gobbledygook')
-        # args set
-        self.assertEqual(cm.exception.args[0], u'字')
-        self.assertEqual(cm.exception.args[1], 'gobbledygook')
-        # message contains the useful information
-        self.assertIn(repr(u'字'), repr(cm.exception))
-        self.assertIn(repr('gobbledygook'), repr(cm.exception))
+        self.assertIn('No such file or directory', str(ioe_c.exception))
+        self.assertIn(
+            'data/kanjivg/kanji/05b57-gobbledygook.svg', str(ioe_c.exception))
 
-    def test_with_mismatched_variant_raises_correct_exception(self):
-        # New style doesn't change the exception any more. We get an
-        # IOError now.
-        self.assertRaises(IOError, KanjiVG, (u'漢', 'Kaisho'))
+    def test_with_mismatched_variant_raises_ioerror(self):
+        with self.assertRaises(IOError) as ioe_c:
+            KanjiVG(u'漢', 'Kaisho')
+        self.assertIn('No such file or directory', str(ioe_c.exception))
+        self.assertIn(
+            'data/kanjivg/kanji/06f22-Kaisho.svg', str(ioe_c.exception))
 
-    def test_empty_variant_raises_correct_exception(self):
-        # New style doesn't change the exception any more. We get an
-        # IOError now.
-        self.assertRaises(
-            colorizer.InvalidCharacterError, KanjiVG, (u'字', ''))
+
+## Hmm. This should work. Why didn't the original test fail with an
+## usexpected success?
+#    def test_empty_variant_raises_correct_exception(self):
+#        # New style doesn't change the exception any more. We get an
+#        # IOError now.
+#        self.assertRaises(
+#            colorizer.InvalidCharacterError, KanjiVG, (u'字', ''))
 
     def test_with_too_few_parameters_raises_correct_exception(self):
-        self.assertRaises(colorizer.InvalidCharacterError, KanjiVG, ())
+        with self.assertRaises(TypeError) as type_e_c:
+            KanjiVG()
+        self.assertIn(
+            'at least 2 arguments (1 given)', str(type_e_c.exception))
+
 
     def test_permission_denied_error_propogated(self):
         '''
@@ -205,7 +225,7 @@ class KanjiVGGetListTest(unittest.TestCase):
         first_pair = all_kanji[0]
         self.assertIsInstance(first_pair, tuple)
         self.assertEqual(len(first_pair), 2)
-        self.assertIsInstance(first_pair[0], str)
+        self.assertIsInstance(first_pair[0], unicode)
         self.assertIsInstance(first_pair[1], str)
 
 
