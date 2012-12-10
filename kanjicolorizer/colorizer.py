@@ -340,9 +340,7 @@ class KanjiColorizer:
                 # Make it possible to specify variants, accept (a
                 # single line of) csv. (A single ',' stays a comma. If
                 # you want to convert a comma and other characters,
-                # use two calls. When you want to convert just a
-                # variant of one character, pick a second one as
-                # dummy.)
+                # use two calls.)
                 # The split transforms the string to a list. But we
                 # don't really care.
                 self.settings.characters = self.settings.characters.split(',')
