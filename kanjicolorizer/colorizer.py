@@ -346,7 +346,6 @@ class KanjiColorizer:
                 # The split transforms the string to a list. But we
                 # don't really care.
                 self.settings.characters = self.settings.characters.split(',')
-                print u'characters is now {}'.format(self.settings.characters)
             for c in self.settings.characters:
                 var = ''
                 if '-' in c:
