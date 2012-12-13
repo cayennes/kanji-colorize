@@ -72,10 +72,10 @@ class KanjiVG(object):
         >>> k2.variant
         'Kaisho'
 
-        >>> k = KanjiVG((u'Л'))
+        >>> k = KanjiVG((u'Л'))  # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
            ...
-        IOError: [Errno 2] No such file or directory: './kanjicolorizer/data/kanjivg/kanji/0041b.svg'
+        IOError: [Errno 2] No such file or directory: 'kanjicolorizer/data/kanjivg/kanji/0041b.svg'
         """
         self.character = character
         self.variant = variant
