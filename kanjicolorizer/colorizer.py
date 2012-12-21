@@ -479,10 +479,6 @@ kvg:type CDATA #IMPLIED >
                 self._get_dst_filename(kanji))
             with open(dst_file_path, 'w', encoding='utf-8') as f:
                 f.write(self._header_copyright())
-                # f.write(ET.tostring(self.svg))
-                # Unescape HTML entities to bring it back closer to
-                # the original, make searching for elements easier,
-                # ...
                 f.write(hp.unescape(ET.tostring(self.svg)))
 
     def _modify_svg(self):
