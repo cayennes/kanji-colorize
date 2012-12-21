@@ -335,9 +335,17 @@ class KanjiColorizer:
             characters = KanjiVG.get_all()
         else:
             characters = []
+            if ',' in self.settings.characters \
+                    and len(self.settings.characters) > 1:
+                self.settings.characters = self.settings.characters.split(',')
             for c in self.settings.characters:
+                var = ''
+                if '-' in c:
+                    varsplit = c.split('-')
+                    c = varsplit[0]
+                    var = '-'.join(varsplit[1:])
                 try:
-                    characters.append(KanjiVG(c))
+                    characters.append(KanjiVG(c, var))
                 except InvalidCharacterError:
                     pass
         for kanji in characters:
