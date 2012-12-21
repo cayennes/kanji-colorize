@@ -1,11 +1,17 @@
 *.zip
 *.pyc
 kanji-colorize-*
+colorized-kanji
 kanjivg
 kanji
 /build
 /dist
 MANIFEST
+
+# Emacs temp files:
+*~
+.#*
+\#*
 
 !/test/kanivg
 !/test/kanivg/kanji

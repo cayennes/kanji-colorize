@@ -1,10 +1,10 @@
 #!/usr/bin/env python2
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 
 # kanji_colorizer.py is part of kanji-colorize which makes KanjiVG data
 # into colored stroke order diagrams; this is the anki2 addon file.
 #
-# Copyright 2012 Cayenne Boyer
+# Copyright 2012 Cayenne Boyer, Roland Sieker
 #
 # The code to do this automatically when the Kanji field is exited was
 # originally based on the Japanese support reading generation addon by
@@ -39,52 +39,59 @@
 
 # CONFIGURATION
 
-# Change the settings by editing the part between quotation marks in
-# the last line of each block; leave everything else as it is.
+# Change the settings by editing the part at the right, after the
+# colon above the explanation; leave everything else as it is. Make
+# sure that each of these lines still ends with a comma.
 
-# MODE
-config = "--mode "
-# spectrum: color progresses evenly through the spectrum; nice for
-#           seeing the way the kanji is put together at a glance, but
-#           has the disadvantage of using similar colors for consecutive
-#           strokes which can make it less clear which number goes with
-#           which number goes with which stroke.
-# contrast: maximizes the contrast among any group of consecutive
-#           strokes, using the golden ratio; also provides consistency
-#           by using the same sequence for every kanji
-config += "spectrum"
+config_dict = {
 
+    'mode': 'spectrum',
+# Three modes are posible:
+# 'spectrum': color progresses evenly through the spectrum; nice for
+#            seeing the way the kanji is put together at a glance, but
+#            has the disadvantage of using similar colors for consecutive
+#            strokes which can make it less clear which number goes with
+#            which number goes with which stroke.
+# 'contrast': maximizes the contrast among any group of consecutive
+#            strokes, using the golden ratio; also provides consistency
+#            by using the same sequence for every kanji
+# 'css':     the colors are not stored in the svg file itself, but defined
+#            in the file "_kanji_style.css" in the collection.media
+#            folder. The colors can be changed at any time in that
+#            file.
+
+    'saturation': 0.95,
 # SATURATION
-config += " --saturation "
-# --saturation: a decimal indicating saturation where 0 is
-# white/gray/black and 1 is completely colorful
-config += "0.95"
+# a decimal indicating saturation where 0 is white/gray/black and 1 is
+# completely colorful. This number is ignored when using css mode.
 
+    'value': 0.75,
 # VALUE
-config += " --value "
-# --value: a decimal indicating value where 0 is black and 1 is colored
-# or white
-config += "0.75"
+# a decimal indicating value where 0 is black and 1 is colored or
+# white. This value, This number is ignored, too, when using css mode.
 
+    'image-size': 327,
 # IMAGE SIZE
-config += " --image-size "
-# --image-size: image size in pixels; they're square so this will be
-# both height and width
-config += "327"
+# image size in pixels; they're square so this will be both height and
+# width.
+}
 
 # END CONFIGURATION
+
+import os
+import shutil
 
 from anki.hooks import addHook
 from aqt import mw
 from aqt.utils import showInfo, askUser
 from aqt.qt import *
-from kanjicolorizer.colorizer import KanjiColorizer
-import os
+
+from kanjicolorizer.colorizer import KanjiColorizer, KanjiVG
 
 srcField = 'Kanji'
 dstField = 'Diagram'
 
-kc = KanjiColorizer(config)
+kc = KanjiColorizer(config=config_dict)
 
 
 def modelIsCorrectType(model):
@@ -107,7 +114,7 @@ def kanjiToAdd(note, currentFieldIndex=None):
     '''
     if not modelIsCorrectType(note.model()):
         return None
-    if currentFieldIndex != None:  # We've left a field
+    if currentFieldIndex is not None:  # We've left a field
         # But it isn't the relevant one
         if note.model()['flds'][currentFieldIndex]['name'] != srcField:
             return None
@@ -120,33 +127,70 @@ def kanjiToAdd(note, currentFieldIndex=None):
     return srcTxt
 
 
-def addKanji(note, flag=False, currentFieldIndex=None):
+def addKanji(note, flag=False, currentFieldIndex=None, regenerate=False):
     '''
     Checks to see if a kanji should be added, and adds it if so.
     '''
     character = kanjiToAdd(note, currentFieldIndex)
-    if character == None:
+    if character is None:
         return flag
-    # write to file; anki works in the media directory by default
-    filename = kc.get_character_filename(character)
-    with open(filename, 'w') as file:
-        file.write(kc.get_colored_svg(character))
-        mw.col.media.addFile(os.path.abspath(filename))
-        note[dstField] = '<img src="%s">' % filename
+    # write to file; To be sure use the media directory
+    # explicitly. (This may not be necessary.)
+    try:
+        kvg = KanjiVG(character)
+    except (ValueError, IOError, TypeError):
+        return flag
+    file_name = kvg.character_filename
+    file_path = os.path.join(mw.col.media.dir(), file_name)
+    if regenerate or not os.path.exists(file_path):
+        try:
+            with open(file_path, 'w') as out_file:
+                out_file.write(kc.get_colored_svg(kvg=kvg))
+        except IOError:
+            return flag
+    note[dstField] = u'''<embed width="{size}" height="{size}" \
+src="{src}">'''.format(size=config_dict['image-size'], src=file_name)
     note.flush()
     return True
 
 
 # Add a colorized kanji to a Diagram whenever leaving a Kanji field
-
 def onFocusLost(flag, note, currentFieldIndex):
     return addKanji(note, flag, currentFieldIndex)
+
 
 addHook('editFocusLost', onFocusLost)
 
 
-# menu item to regenerate all
+def maybe_copy_style():
+    """
+    Make sure _kanji_style.css and _kanji_script.js are available.
 
+    Copy  _kanji_style.css and _kanji_script.js from the kanji folder
+    to the user's collection, unless they are there already. This is
+    called on every profile load.
+    """
+    if not 'css' == config_dict['mode']:
+        return
+    if not os.path.exists(os.path.join(
+            mw.col.media.dir(), '_kanji_style.css')):
+        shutil.copy(
+            os.path.join(mw.pm.addonFolder(), 'kanjicolorizer', 'extra',
+                         '_kanji_style.css'),
+            os.path.join(
+                mw.col.media.dir(), '_kanji_style.css'))
+    if not os.path.exists(os.path.join(
+            mw.col.media.dir(), '_kanji_script.js')):
+        shutil.copy(
+            os.path.join(mw.pm.addonFolder(), 'kanjicolorizer', 'extra',
+                         '_kanji_script.js'),
+            os.path.join(
+                mw.col.media.dir(), '_kanji_script.js'))
+
+addHook("profileLoaded", maybe_copy_style)
+
+
+# menu item to regenerate all
 def regenerate_all():
     # Find the models that have the right name and fields; faster than
     # checking every note
@@ -158,7 +202,7 @@ def regenerate_all():
     # Find the notes in those models and give them kanji
     for model in models:
         for nid in mw.col.models.nids(model):
-            addKanji(mw.col.getNote(nid))
+            addKanji(mw.col.getNote(nid), regenerate=True)
     showInfo("Done regenerating colorized kanji diagrams!")
 
 # add menu item
