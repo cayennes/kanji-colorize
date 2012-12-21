@@ -33,6 +33,7 @@ import os
 import re
 import sys
 import xml.etree.ElementTree as ET
+import HTMLParser
 
 source_directory = os.path.join(os.path.dirname(__file__),
                                 'data', 'kanjivg', 'kanji')
@@ -466,6 +467,7 @@ kvg:type CDATA #IMPLIED >
                     base = varsplit[0]
                     variant = '-'.join(varsplit[1:])
                 characters.append((base, variant))
+        hp = HTMLParser.HTMLParser()
         for k_base, var in characters:
             try:
                 kanji = KanjiVG(k_base, var)
@@ -477,7 +479,11 @@ kvg:type CDATA #IMPLIED >
                 self._get_dst_filename(kanji))
             with open(dst_file_path, 'w', encoding='utf-8') as f:
                 f.write(self._header_copyright())
-                f.write(ET.tostring(self.svg))
+                # f.write(ET.tostring(self.svg))
+                # Unescape HTML entities to bring it back closer to
+                # the original, make searching for elements easier,
+                # ...
+                f.write(hp.unescape(ET.tostring(self.svg)))
 
     def _modify_svg(self):
         u"""
