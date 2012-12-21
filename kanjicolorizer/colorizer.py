@@ -228,6 +228,10 @@ class KanjiColorizer:
                     help='a decimal indicating saturation where 0 is '
                         'white/gray/black and 1 is completely  colorful '
                         '(default: %(default)s)')
+        self._parser.add_argument('--group-mode', default='off', 
+                    choices=['off', 'on'],
+                    help='Color kanji groups instead of stroke by stroke '
+                        '(default: %(default)s)')
         self._parser.add_argument('--value', default=0.75, type=float,
                     help='a decimal indicating value where 0 is black '
                         'and 1 is colored or white '
@@ -367,9 +371,16 @@ class KanjiColorizer:
         ...
         """
         svg = self._color_svg(svg)
+
+        if self.settings.group_mode == 'on':
+            svg = self._remove_strokes(svg)
+        
         svg = self._resize_svg(svg)
         svg = self._comment_copyright(svg)
         return svg
+
+    def _remove_strokes(self, svg):
+        return re.sub("<text.*?</text>", "", svg)
 
     # Private methods for working with files and directories
 
@@ -447,8 +458,38 @@ class KanjiColorizer:
                 'style="stroke:' +
                 next(color_iterator) + '" ')
 
-        svg = re.sub('<path ', color_match, svg)
-        return re.sub('<text ', color_match, svg)
+        if self.settings.group_mode != 'on':
+            svg = re.sub('<path ', color_match, svg)
+            return re.sub('<text ', color_match, svg)
+        else:
+            found = False
+            depth = 0
+            iopen = 0
+            lines = svg.split('\n')
+        
+            nsvg=''
+            for line in lines:
+                if line.find('<g ') != -1 or line.find('</g>') != -1:
+                    if not found:
+                        if line.find("<g ") != -1 and line.find('kvg:element') != -1:   
+                            found = True
+                            #print "first element tag found"
+                    else:
+                        if line.find("</g>") != -1:
+                            if iopen != 0 and iopen == depth:
+                                iopen = 0
+                                #print 'color group closed'
+                            depth-=1
+
+                        if line.find("<g ") != -1:
+                            depth+=1
+                            if iopen == 0 and line.find('kvg:element') != -1:
+                                iopen = depth
+                                line = re.sub('<g ', color_match, line)
+                                #print 'color group opened'
+
+                nsvg+=line+"\n"
+            return nsvg
 
     def _comment_copyright(self, svg):
         """
