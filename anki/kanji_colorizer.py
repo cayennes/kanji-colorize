@@ -54,6 +54,11 @@ config = "--mode "
 #           by using the same sequence for every kanji
 config += "spectrum"
 
+# don't color stroke by stroke but color kanji groups
+config += " --group-mode "
+config += " off "
+#config += " on "
+
 # SATURATION
 config += " --saturation "
 # --saturation: a decimal indicating saturation where 0 is
@@ -81,6 +86,7 @@ from aqt.qt import *
 from kanjicolorizer.colorizer import KanjiVG, KanjiColorizer
 import os
 from codecs import open
+import string
 
 srcField = 'Kanji'
 dstField = 'Diagram'
@@ -100,40 +106,38 @@ def modelIsCorrectType(model):
                          srcField in fields and
                          dstField in fields)
 
-
-def kanjiToAdd(note, currentFieldIndex=None):
-    '''
-    Determines whether and what kanji to add a diagram for, given a note
-    and possibly the index of a field that was edited
-    '''
-    if not modelIsCorrectType(note.model()):
-        return None
-    if currentFieldIndex != None:  # We've left a field
-        # But it isn't the relevant one
-        if note.model()['flds'][currentFieldIndex]['name'] != srcField:
-            return None
-    # check that srcField contains a single character
-    srcTxt = mw.col.media.strip(note[srcField])
-    if not srcTxt:
-        return None
-    if not len(srcTxt) == 1:
-        return None
-    return srcTxt
-
-
 def addKanji(note, flag=False, currentFieldIndex=None):
     '''
     Checks to see if a kanji should be added, and adds it if so.
     '''
-    character = kanjiToAdd(note, currentFieldIndex)
-    if character == None:
+    if not modelIsCorrectType(note.model()):
         return flag
-    # write to file; anki works in the media directory by default
-    filename = KanjiVG(character).ascii_filename
-    with open(filename, 'w', encoding='utf-8') as file:
-        file.write(kc.get_colored_svg(character))
-        mw.col.media.addFile(os.path.abspath(filename))
-        note[dstField] = '<img src="%s">' % filename
+
+    if currentFieldIndex != None: # We've left a field
+        # But it isn't the relevant one
+        if note.model()['flds'][currentFieldIndex]['name'] != srcField:
+            return None
+
+    srcTxt = mw.col.media.strip(note[srcField])
+
+    dst=''
+    #srcTxt = string.replace(srcTxt, u'\uff5e', u'\u301c').encode('euc-jp')
+    for character in unicode(srcTxt):
+        if ord(character) < 19968: # only add kanjis
+            continue
+
+        # write to file; anki works in the media directory by default
+        filename = KanjiVG(character).ascii_filename
+        try:
+            with open(filename,'w', encoding='utf-8') as file:
+                file.write(kc.get_colored_svg(character))
+                mw.col.media.addFile(os.path.abspath(filename))
+                dst+='<img src="%s">' % filename
+        except:
+            print "file not found: "+filename+". Ignoring ..."
+
+
+    note[dstField] = dst
     note.flush()
     return True
 
