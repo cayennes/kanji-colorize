@@ -78,8 +78,9 @@ from anki.hooks import addHook
 from aqt import mw
 from aqt.utils import showInfo, askUser
 from aqt.qt import *
-from kanjicolorizer.colorizer import KanjiColorizer
+from kanjicolorizer.colorizer import KanjiVG, KanjiColorizer
 import os
+from codecs import open
 
 srcField = 'Kanji'
 dstField = 'Diagram'
@@ -128,8 +129,8 @@ def addKanji(note, flag=False, currentFieldIndex=None):
     if character == None:
         return flag
     # write to file; anki works in the media directory by default
-    filename = kc.get_character_filename(character)
-    with open(filename, 'w') as file:
+    filename = KanjiVG(character).ascii_filename
+    with open(filename, 'w', encoding='utf-8') as file:
         file.write(kc.get_colored_svg(character))
         mw.col.media.addFile(os.path.abspath(filename))
         note[dstField] = '<img src="%s">' % filename
