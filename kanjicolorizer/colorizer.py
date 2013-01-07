@@ -460,15 +460,21 @@ class KanjiColorizer:
         """
         color_iterator = self._color_generator(self._stroke_count(svg))
 
-        def color_match(match_object):
+        def path_match(match_object):
             return (
                 match_object.re.pattern +
-                'style="stroke:' +
-                next(color_iterator) + '" ')
+                'style="stroke: ' +
+                next(color_iterator) + ';" ')
+
+        def text_match(match_object):
+            return (
+                match_object.re.pattern +
+                'style="fill: ' +
+                next(color_iterator) + ';" ')
 
         if self.settings.group_mode != 'on':
-            svg = re.sub('<path ', color_match, svg)
-            return re.sub('<text ', color_match, svg)
+            svg = re.sub('<path ', path_match, svg)
+            return re.sub('<text ', text_match, svg)
         else:
             found = False
             depth = 0
