@@ -453,10 +453,10 @@ class KanjiColorizer:
         >>> svg = "<svg><path /><path /><text >1</text><text >2</text></svg>"
         >>> kc = KanjiColorizer('')
         >>> kc._color_svg(svg)
-        '<svg><path style="stroke:#bf0909" /><path style="stroke:#09bfbf" /><text style="stroke:#bf0909" >1</text><text style="stroke:#09bfbf" >2</text></svg>'
+        '<svg><path style="stroke: #bf0909;" /><path style="stroke: #09bfbf;" /><text style="fill: #bf0909;" >1</text><text style="fill: #09bfbf;" >2</text></svg>'
         >>> svg = "<svg><path /><path /></svg>"
         >>> kc._color_svg(svg)
-        '<svg><path style="stroke:#bf0909" /><path style="stroke:#09bfbf" /></svg>'
+        '<svg><path style="stroke: #bf0909;" /><path style="stroke: #09bfbf;" /></svg>'
         """
         color_iterator = self._color_generator(self._stroke_count(svg))
 
