@@ -453,22 +453,28 @@ class KanjiColorizer:
         >>> svg = "<svg><path /><path /><text >1</text><text >2</text></svg>"
         >>> kc = KanjiColorizer('')
         >>> kc._color_svg(svg)
-        '<svg><path style="stroke:#bf0909" /><path style="stroke:#09bfbf" /><text style="stroke:#bf0909" >1</text><text style="stroke:#09bfbf" >2</text></svg>'
+        '<svg><path style="stroke: #bf0909;" /><path style="stroke: #09bfbf;" /><text style="fill: #bf0909;" >1</text><text style="fill: #09bfbf;" >2</text></svg>'
         >>> svg = "<svg><path /><path /></svg>"
         >>> kc._color_svg(svg)
-        '<svg><path style="stroke:#bf0909" /><path style="stroke:#09bfbf" /></svg>'
+        '<svg><path style="stroke: #bf0909;" /><path style="stroke: #09bfbf;" /></svg>'
         """
         color_iterator = self._color_generator(self._stroke_count(svg))
 
-        def color_match(match_object):
+        def path_match(match_object):
             return (
                 match_object.re.pattern +
-                'style="stroke:' +
-                next(color_iterator) + '" ')
+                'style="stroke: ' +
+                next(color_iterator) + ';" ')
+
+        def text_match(match_object):
+            return (
+                match_object.re.pattern +
+                'style="fill: ' +
+                next(color_iterator) + ';" ')
 
         if self.settings.group_mode != 'on':
-            svg = re.sub('<path ', color_match, svg)
-            return re.sub('<text ', color_match, svg)
+            svg = re.sub('<path ', path_match, svg)
+            return re.sub('<text ', text_match, svg)
         else:
             found = False
             depth = 0
