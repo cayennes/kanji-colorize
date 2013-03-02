@@ -19,7 +19,9 @@ Getting diagrams
 ----------------
 
 If you just want some colorted diagrams, you can get them at 
-`Downloads <https://github.com/cayennes/kanji-colorize/downloads>`_.  
+`Downloads <https://github.com/cayennes/kanji-colorize/downloads>`_.
+(Unfortunately github downloadable custom packages have been depricated
+so I will not be able to update these.)
 
 I've packaged up a spectrum set and a contrast set. The spectrum set
 colors the strokes in rainbow order and is nice because the you can see
@@ -32,7 +34,7 @@ uses the golden ratio.  Math is nifty.)
 Downloading the Software
 ------------------------
 
-If do want the software to generate diagrams to your own specifications,
+If you want the software to generate diagrams to your own specifications,
 there is a package of the software on `KanjiColorizer's page on PyPI
 <http://pypi.python.org/pypi/KanjiColorizer>`_.  You can also clone the
 repository on GitHub; note that you will need to run ``git submodule
@@ -63,51 +65,27 @@ processing the whole kanji collection, use the ``--characters`` option
 (for example, ``python kanji_colorizer.py --characters 漢字``) to only
 color the specified characters.
 
-If you want to be able to run the script as ``kanji_colorize.py`` from anywhere, run ``python
-setup.py install``.
+If you want to be able to run the script as ``kanji_colorize.py`` from
+anywhere, run ``python setup.py install``.
 
 Using with Anki
 ---------------
 
+Anki 2.x
+`````````````
+There is an addon for Anki2 that generates colored diagrams for all of
+your kanji cards.  You can download it from the Anki2 Addon site.
+
+**known issue**: Unfortunately it is currently broken unless you have a full install of
+python 2.x on your path.  I intend to fix this soon, for some value of
+soon.
+
 Anki 1.x
 ````````
 
-To add these to a kanji deck:
+While I originally had instructions for a way to use a set of generated
+diagrams with Anki1, it never worked very well.
 
-1. Unzip the downloaded collection if you downloaded it
-2. Put the contents in your deck's .media folder (which is most likely
-   in your Dropbox/Public/Anki folder if you sync media or next to your
-   deck at [My ]Documents/Anki if you don't.)  If your deck doesn't have
-   a media folder create a directory with the same name as your deck
-   except ending in .media instead of .anki.
-3. Add ``<img src={{text:Kanji}}.svg>`` to your card template, where 
-   Kanji is the name of a field that contains a single kanji character.
-   Note that ``{{text:Kanji}}`` (or ``{{Kanji}}``) can't be used in the
-   same template as ``{{{Kanji}}}``; see 
-   `Anki's CardLayout help page <http://ankisrs.net/docs/CardLayout>`_
-   for more information.
-4. Close and re-open your deck.
-
-Now all kanji cards you have and all the ones you add will get stroke
-order diagrams without any more work from you.
-
-Unless:
-
-* If you aren't going to be adding any more kanji to your deck and you'd
-  like to delete all the extra files, you can run "Tools >> Advanced >>
-  Check Media Database..." and select "scan and delete".  If you do this
-  and want to add more kanji later, you will have to repeat the above
-  steps again.
-
-There are examples of the diagrams and more on using stroke order
-diagrams with anki in `this Japanese Level Up post <http://japaneselevelup.com/2012/03/24/boosting-ankis-power-with-media-enhancements-4-colorful-stroke-order-diagrams/>`_.
-
-Anki 2.0 beta
-`````````````
-There is an addon for the anki 2.0 beta so you get diagrams
-automatically; it already works and just needs some polish.  See the
-comments on the beginning of the file in the "anki" folder of this
-project for how to use it.
 
 Using the Package in Python Code
 --------------------------------
@@ -118,25 +96,6 @@ API *will* be changing.
 Documentation can be found in the docstrings.  Though I have to admit
 that I used doctest, which mean writing not-great documentation and
 not-great tests for almost no work.
-
-Known Issues
-------------
-
-Distributing zips of files with characters for filenames doesn't work as
-well as a universal simple method of adding stroke order diagrams to
-anki decks as I had hoped, for two reasons:
-
-1. Zip doesn't support unicode very well; it doesn't have a way of
-   indicating what character set is used.
-2. Anki support for adding media via the template is somewhat weak, and
-   it's unclear how to get it to reliably sync to other devices, though
-   I and other users have gotten it to work.
-
-But Anki 2.0 is around the corner so I don't think this is a problem
-worth fixing.
-
-If people tell me they have other uses for packaged sets, let me know
-what format would be most helpful.
 
 Feedback
 --------
@@ -154,6 +113,24 @@ project know using `their issue tracker
 <https://github.com/KanjiVG/kanjivg/issues>`_.  If you find errors in
 image files you generated from KanjiVG data and you have the most recent
 data, it should be reported to KanjiVG.
+
+Development
+-----------
+
+Have you created an improvement to KanjiColorizer that you think
+other people would also like to have?  If so, please submit a patch or a
+pull request!  I'm not always very prompt but I do get to them
+eventually.
+
+Please make sure existing tests pass.  Or even better, add new tests for
+anything you add.  Either doctest or unittest is fine, though ideally
+the doctests would contain executable examples that fully illustrate the
+function and the unittest tests would contain further worthwhile checks.
+
+To run the existing tests:
+
+    $ python -m kanjicolorizer.colorizer
+    $ python -m unittest discover
 
 Licence
 -------
