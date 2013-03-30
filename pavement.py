@@ -20,9 +20,19 @@
 # License along with this program.  If not, see
 # <http://www.gnu.org/licenses/>.
 
-from distutils.core import setup
+from paver.easy import *
+from paver.setuputils import setup
+import zipfile
 
-setup(name='KanjiColorizer',
+
+options(
+    anki=Bunch(
+        builddir=path('build') / 'anki_addon',
+        zip=path('dist') / 'KanjiColorizerAnkiAddon.zip'))
+
+
+setup(
+    name='KanjiColorizer',
     description='script and module to create colored stroke order '
         'diagrams based on KanjiVG data',
     long_description=open('README.rst').read(),
@@ -43,7 +53,49 @@ setup(name='KanjiColorizer',
         'Natural Language :: English',
         'Operating System :: OS Independent',
         'Topic :: Education',
-        'Topic :: Multimedia :: Graphics'
-        ]
-    )
+        'Topic :: Multimedia :: Graphics' ])
 
+
+@task
+@needs('generate_setup', 'minilib', 'setuptools.command.sdist')
+def sdist():
+    pass
+
+
+@task
+def clean_anki_addon(options):
+    if options.anki.builddir.exists():
+        options.anki.builddir.rmtree()
+
+
+@task
+@needs('setuptools.command.build', 'clean_anki_addon')
+def build_anki_addon(options):
+
+    import argparse
+    import colorsys
+
+    # somewhere to put things
+    options.anki.builddir.makedirs()
+
+    # add addon files
+    (path('anki') / 'kanji_colorizer.py').copy(options.anki.builddir)
+    lib_path = path('build') / 'lib' / 'kanjicolorizer'
+    lib_path.copytree(options.anki.builddir / 'kanjicolorizer')
+
+    # add required modules, minus the c in .pyc to get .py files
+    path(argparse.__file__[:-1]).copy(options.anki.builddir)
+    path(colorsys.__file__[:-1]).copy(options.anki.builddir)
+
+    # add licenses
+    license_dest = options.anki.builddir / 'kanjicolorizer' / 'licenses'
+    path('licenses').copytree(license_dest)
+
+
+@task
+@needs('build_anki_addon')
+def dist_anki_addon(options):
+    print("create addon zip at " + options.anki.zip)
+    with zipfile.ZipFile(options.anki.zip, 'w') as addon_zip:
+        for file in options.anki.builddir.walkfiles():
+            addon_zip.write(file, options.anki.builddir.relpathto(file))
