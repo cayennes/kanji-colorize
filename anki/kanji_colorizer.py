@@ -27,7 +27,7 @@
 # Installation: copy this file and the kanjicolorizer directory to your
 # Anki addons folder.
 
-# Usage: Add a "Diagrams" field to a model with "Japanese"
+# Usage: Add a "Diagram" field to a model with "Japanese"
 # in the name and a field named "Kanji".  When you finish editing the
 # kanji field, if it contains precisely one character, a colored stroke
 # order diagram will be added to the Diagram field in the same way that
