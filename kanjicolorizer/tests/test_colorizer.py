@@ -26,7 +26,7 @@ import os
 from kanjicolorizer import colorizer
 from kanjicolorizer.colorizer import KanjiVG, KanjiColorizer
 
-TOTAL_NUMBER_CHARACTERS = 11251
+TOTAL_NUMBER_CHARACTERS = 11258
 
 
 class KanjiVGInitTest(unittest.TestCase):
