@@ -228,8 +228,7 @@ class KanjiColorizer:
                     help='a decimal indicating saturation where 0 is '
                         'white/gray/black and 1 is completely  colorful '
                         '(default: %(default)s)')
-        self._parser.add_argument('--group-mode', default='off', 
-                    choices=['off', 'on'],
+        self._parser.add_argument('--group-mode', action='store_true',
                     help='Color kanji groups instead of stroke by stroke '
                         '(default: %(default)s)')
         self._parser.add_argument('--value', default=0.75, type=float,

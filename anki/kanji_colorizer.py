@@ -54,10 +54,8 @@ config = "--mode "
 #           by using the same sequence for every kanji
 config += "spectrum"
 
-# don't color stroke by stroke but color kanji groups
-config += " --group-mode "
-config += " off "
-#config += " on "
+# uncomment this line to color whole groups instead of strokes
+#config += " --group-mode "
 
 # SATURATION
 config += " --saturation "
