@@ -74,6 +74,7 @@ class KanjiVG(object):
         Traceback (most recent call last):
             ...
         InvalidCharacterError: (u'\\u041b', '')
+
         '''
         self.character = character
         self.variant = variant
@@ -379,7 +380,7 @@ class KanjiColorizer:
         """
         svg = self._color_svg(svg)
 
-        if self.settings.group_mode == 'on':
+        if self.settings.group_mode:
             svg = self._remove_strokes(svg)
         
         svg = self._resize_svg(svg)
@@ -471,7 +472,7 @@ class KanjiColorizer:
                 'style="fill: ' +
                 next(color_iterator) + ';" ')
 
-        if self.settings.group_mode != 'on':
+        if not self.settings.group_mode:
             svg = re.sub('<path ', path_match, svg)
             return re.sub('<text ', text_match, svg)
         else:
@@ -498,7 +499,7 @@ class KanjiColorizer:
                             depth+=1
                             if iopen == 0 and line.find('kvg:element') != -1:
                                 iopen = depth
-                                line = re.sub('<g ', color_match, line)
+                                line = re.sub('<g ', path_match, line)
                                 #print 'color group opened'
 
                 nsvg+=line+"\n"
