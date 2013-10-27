@@ -129,10 +129,13 @@ def addKanji(note, flag=False, currentFieldIndex=None):
         try:
             with open(filename,'w', encoding='utf-8') as file:
                 file.write(kc.get_colored_svg(character))
-                mw.col.media.addFile(os.path.abspath(filename))
-                dst+='<img src="%s">' % filename
-        except:
-            print "file not found: "+filename+". Ignoring ..."
+                mw.col.media.addFile(os.path.abspath(unicode(filename)))
+                dst+=u'<img src="%s">' % filename
+        except IOError as e:
+            if e.errno == FILE_NOT_FOUND:
+                print "file not found: "+filename+". Ignoring ..."
+            else:
+                raise
 
 
     note[dstField] = dst
