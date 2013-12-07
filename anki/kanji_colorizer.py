@@ -81,7 +81,8 @@ from anki.hooks import addHook
 from aqt import mw
 from aqt.utils import showInfo, askUser
 from aqt.qt import *
-from kanjicolorizer.colorizer import KanjiVG, KanjiColorizer
+from kanjicolorizer.colorizer import (KanjiVG, KanjiColorizer,
+                                      InvalidCharacterError)
 import os
 from codecs import open
 import string
@@ -125,7 +126,11 @@ def addKanji(note, flag=False, currentFieldIndex=None):
             continue
 
         # write to file; anki works in the media directory by default
-        filename = KanjiVG(character).ascii_filename
+        try:
+            filename = KanjiVG(character).ascii_filename
+        except InvalidCharacterError:
+            # silently ignore non-Japanese characters
+            continue
         try:
             with open(filename,'w', encoding='utf-8') as file:
                 file.write(kc.get_colored_svg(character))
