@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 This file has been modified from the original version by the kanji_colorize.py
-script (available at http://github.com/cayennes/kanji-colorize) with these 
-settings: 
+script (available at http://github.com/cayennes/kanji-colorize) with these
+settings:
     mode: contrast
     saturation: 0.95
     value: 0.75
@@ -12,7 +12,7 @@ It remains under a Creative Commons-Attribution-Share Alike 3.0 License.
 The original SVG has the following copyright:
 
 Copyright (C) 2009/2010/2011 Ulrich Apel.
-This work is distributed under the conditions of the Creative Commons 
+This work is distributed under the conditions of the Creative Commons
 Attribution-Share Alike 3.0 Licence. This means you are free:
 * to Share - to copy, distribute and transmit the work
 * to Remix - to adapt the work

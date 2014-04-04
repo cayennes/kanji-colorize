@@ -295,7 +295,7 @@ class KanjiColorizer:
         >>> svg.splitlines()[0]
         u'<?xml version="1.0" encoding="UTF-8"?>'
         >>> svg.find('00061')
-        1783
+        1780
         >>> svg.find('has been modified')
         54
 
@@ -382,7 +382,7 @@ class KanjiColorizer:
 
         if self.settings.group_mode:
             svg = self._remove_strokes(svg)
-        
+
         svg = self._resize_svg(svg)
         svg = self._comment_copyright(svg)
         return svg
@@ -480,12 +480,12 @@ class KanjiColorizer:
             depth = 0
             iopen = 0
             lines = svg.split('\n')
-        
+
             nsvg=''
             for line in lines:
                 if line.find('<g ') != -1 or line.find('</g>') != -1:
                     if not found:
-                        if line.find("<g ") != -1 and line.find('kvg:element') != -1:   
+                        if line.find("<g ") != -1 and line.find('kvg:element') != -1:
                             found = True
                             #print "first element tag found"
                     else:
@@ -531,8 +531,8 @@ class KanjiColorizer:
         0
         """
         note = """This file has been modified from the original version by the kanji_colorize.py
-script (available at http://github.com/cayennes/kanji-colorize) with these 
-settings: 
+script (available at http://github.com/cayennes/kanji-colorize) with these
+settings:
     mode: """ + self.settings.mode + """
     saturation: """ + str(self.settings.saturation) + """
     value: """ + str(self.settings.value) + """
@@ -562,12 +562,12 @@ The original SVG has the following copyright:
         """
         ratio = repr(float(self.settings.image_size) / 109)
         svg = svg.replace(
-            '109" height="109" viewBox="0 0 109 109', 
+            '109" height="109" viewBox="0 0 109 109',
             '{0}" height = "{0}" viewBox="0 0 {0} {0}'.format(
                 str(self.settings.image_size)))
         svg = re.sub(
-            '(<g id="kvg:Stroke.*?)(>)', 
-            r'\1 transform="scale(' + ratio + ',' + ratio + r')"\2', 
+            '(<g id="kvg:Stroke.*?)(>)',
+            r'\1 transform="scale(' + ratio + ',' + ratio + r')"\2',
             svg)
         return svg
 
