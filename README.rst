@@ -34,41 +34,14 @@ uses the golden ratio.  Math is nifty.)
 Downloading and Running the Software
 ------------------------------------
 
-If you want the command line script to generate diagrams to your own
-specifications, such as saturation and value as well as the choice
-between spectrum and contrast, the easiest way to install it is:
-
-1. Make sure you have `python 2.7 <http://www.python.org/getit/>`_
-   installed.
-2. Run the command ``pip install KanjiColorizer``
-
-The script should now be available by running ``kanji_colorize.py``.
-You can supply it with the ``--help`` option to see what's available.
+Running the `kanji_colorize.py` script requires python built with wide
+character support.
 
 Using with Anki
 ---------------
 
-Anki 2.x
-`````````````
 There is an addon for Anki2 that generates colored diagrams for all of
 your kanji cards.  You can download it from the Anki2 Addon site.
-
-Anki 1.x
-````````
-
-While I originally had instructions for a way to use a set of generated
-diagrams with Anki1, it never worked very well.
-
-
-Using the Package in Python Code
---------------------------------
-
-The code is designed to be imported and used in python programs, but the
-API *will* be changing.
-
-Documentation can be found in the docstrings.  Though I have to admit
-that I used doctest, which mean writing not-great documentation and
-not-great tests for almost no work.
 
 Feedback
 --------
