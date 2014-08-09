@@ -7,6 +7,7 @@ kanji
 /dist
 MANIFEST
 setup.py
+venv
 
 !/test/kanjivg
 !/test/kanjivg/kanji

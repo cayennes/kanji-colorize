@@ -269,9 +269,11 @@ class KanjiColorizer:
         >>> kc.settings.mode
         u'contrast'
         """
-        # Put argv in the correct encoding
+        # Put argv in the correct encoding, with a default for the pytest case
         for i in range(len(sys.argv)):
-            sys.argv[i] = sys.argv[i].decode(sys.stdin.encoding)
+            sys.argv[i] = sys.argv[i].decode(getattr(sys.stdin,
+                                                     'encoding',
+                                                     'UTF-8'))
         self.settings = self._parser.parse_args()
 
     def read_arg_string(self, argstring):
@@ -317,6 +319,7 @@ class KanjiColorizer:
         >>> kc.write_all()
 
         These should be the correct files:
+        >>> import difflib
         >>> for file in os.listdir(test_output_dir):
         ...     our_svg = open(
         ...         os.path.join(test_output_dir, file),
@@ -331,6 +334,7 @@ class KanjiColorizer:
         ...
 
         Clean up doctest
+        >>> import shutil
         >>> shutil.rmtree(test_output_dir)
 
         """
@@ -372,6 +376,7 @@ class KanjiColorizer:
         ...        'test', 'default_results', 'kanji-colorize-spectrum',
         ...        u'漢.svg'),
         ...    'r', encoding='utf-8').read()
+        >>> import difflib
         >>> for line in difflib.context_diff(
         ...        kc._modify_svg(original_svg).splitlines(1),
         ...        desired_svg.splitlines(1)):
@@ -647,6 +652,4 @@ class InvalidCharacterError(Error):
 
 if __name__ == "__main__":
     import doctest
-    import difflib
-    import shutil
     doctest.testmod()
