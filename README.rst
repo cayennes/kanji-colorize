@@ -1,3 +1,6 @@
+.. image:: https://circleci.com/gh/cayennes/kanji-colorize.png?style=badge
+    :target: https://circleci.com/gh/cayennes/kanji-colorize
+
 ==============
 KanjiColorizer
 ==============
