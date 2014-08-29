@@ -37,8 +37,9 @@ uses the golden ratio.  Math is nifty.)
 Downloading and Running the Software
 ------------------------------------
 
-Running the `kanji_colorize.py` script requires python built with wide
-character support.
+The `kanji_colorize.py` script makes it possible to generate diagrams to your
+own specifications.  It may have issues with a python not built with
+wide-character support
 
 Using with Anki
 ---------------
