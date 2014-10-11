@@ -5,4 +5,5 @@ checkout:
 
 test:
   override:
-    - py.test
+    - py.test --verbose:
+        parallel: true
