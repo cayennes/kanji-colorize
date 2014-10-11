@@ -5,6 +5,8 @@
 KanjiColorizer
 ==============
 
+.. image:: kanji-colorize-examples.png
+
 About
 -----
 
@@ -21,10 +23,8 @@ sets of stroke order diagrams generated with it available for download.
 Getting diagrams
 ----------------
 
-If you just want some colorted diagrams, you can get them at 
-`Downloads <https://github.com/cayennes/kanji-colorize/downloads>`_.
-(Unfortunately github downloadable custom packages have been depricated
-so I will not be able to update these.)
+If you just want some colorted diagrams, you can get them on the
+`github releases page <https://github.com/cayennes/kanji-colorize/releases>`_.
 
 I've packaged up a spectrum set and a contrast set. The spectrum set
 colors the strokes in rainbow order and is nice because the you can see
@@ -34,18 +34,19 @@ necessary to tell which number goes with which stroke. The contrast set
 maximizes the contrast between any set of consecutive strokes.  (This
 uses the golden ratio.  Math is nifty.)
 
+Using with Anki
+---------------
+
+There is an `addon for Anki2 <https://ankiweb.net/shared/info/1964372878>`_
+that generates colored diagrams for all of your kanji cards.  You can install
+it with code `1964372878`.
+
 Downloading and Running the Software
 ------------------------------------
 
 The `kanji_colorize.py` script makes it possible to generate diagrams to your
 own specifications.  It may have issues with a python not built with
 wide-character support
-
-Using with Anki
----------------
-
-There is an addon for Anki2 that generates colored diagrams for all of
-your kanji cards.  You can download it from the Anki2 Addon site.
 
 Feedback
 --------
@@ -78,10 +79,12 @@ function and the unittest tests would contain further worthwhile checks.
 
 To run the existing tests:
 
+.. code:: bash
+
     $ python -m kanjicolorizer.colorizer
     $ python -m unittest discover
 
-Licence
+License
 -------
 
 The code is available under the Affero GPL version 3 or later and the SVG
