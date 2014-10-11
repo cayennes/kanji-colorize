@@ -145,7 +145,7 @@ def addKanji(note, flag=False, currentFieldIndex=None):
 
     note[dstField] = dst
     note.flush()
-    return True
+    return dst != ''
 
 
 # Add a colorized kanji to a Diagram whenever leaving a Kanji field
