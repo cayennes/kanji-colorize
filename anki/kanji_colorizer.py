@@ -105,6 +105,21 @@ def modelIsCorrectType(model):
                          srcField in fields and
                          dstField in fields)
 
+
+def characters_to_colorize(s):
+    '''
+    Given a string, returns a lost of characters to colorize
+
+    If the string consists of only a single character, returns a list
+    containing that character.  If it is longer, returns a list of  only the
+    kanji.
+
+    '''
+    if len(s) <= 1:
+        return list(s)
+    return [c for c in s if ord(c) >= 19968 and ord(c) <= 40879]
+
+
 def addKanji(note, flag=False, currentFieldIndex=None):
     '''
     Checks to see if a kanji should be added, and adds it if so.
@@ -121,10 +136,7 @@ def addKanji(note, flag=False, currentFieldIndex=None):
 
     dst=''
     #srcTxt = string.replace(srcTxt, u'\uff5e', u'\u301c').encode('euc-jp')
-    for character in unicode(srcTxt):
-        if ord(character) < 19968: # only add kanjis
-            continue
-
+    for character in characters_to_colorize(unicode(srcTxt)):
         # write to file; anki works in the media directory by default
         try:
             filename = KanjiVG(character).ascii_filename
