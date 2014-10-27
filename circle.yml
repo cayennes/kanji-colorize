@@ -5,5 +5,5 @@ checkout:
 
 test:
   override:
-    - py.test --verbose:
+    - py.test --verbose --junitxml=$CI_REPORTS/junit.xml:
         parallel: true
