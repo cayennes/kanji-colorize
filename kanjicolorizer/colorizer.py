@@ -33,6 +33,28 @@ from codecs import open
 from errno import ENOENT as FILE_NOT_FOUND
 import sys
 
+
+# Function that I want to have after refactoring, currently implemented using
+# existing interface
+
+def colorize(character, mode="spectrum", saturation=0.95, value=0.75,
+             image_size=327):
+    """
+    Returns a string containing the colorized svg for the character
+
+    >>> svg = colorize(u'a', mode='spectrum', image_size=100,
+    ...                saturation=0.95, value=0.75)
+    >>> 'has been modified' in svg
+    True
+
+    """
+    arg_fmt = '--mode {} --saturation {} --value {} --image-size {}'
+    arg_string = arg_fmt.format(mode, saturation, value, image_size)
+    colorizer = KanjiColorizer(arg_string)
+
+    return colorizer.get_colored_svg(character)
+
+
 # Setup
 
 source_directory = os.path.join(os.path.dirname(__file__),
@@ -81,8 +103,8 @@ class KanjiVG(object):
         if self.variant is None:
             self.variant = ''
         try:
-            with open(os.path.join(source_directory,
-                    self.ascii_filename), encoding='utf-8') as f:
+            with open(os.path.join(source_directory, self.ascii_filename),
+                      encoding='utf-8') as f:
                 self.svg = f.read()
         except IOError as e:  # file not found
             if e.errno == FILE_NOT_FOUND:
@@ -178,7 +200,7 @@ class KanjiColorizer:
 
     Note: This class is in the middle of having stuff that shouldn't be
     included factored out.  Some things have already been moved to the
-    KanjiVG class; more stuff will move to other classes before 0.6.
+    KanjiVG class; more stuff will move.
     """
 
     def __init__(self, argstring=''):
