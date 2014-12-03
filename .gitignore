@@ -8,6 +8,8 @@ kanji
 MANIFEST
 setup.py
 venv
+.coverage
+htmlcov
 
 !/test/kanjivg
 !/test/kanjivg/kanji

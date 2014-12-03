@@ -1,3 +1,7 @@
+general:
+  artifacts:
+    - htmlcov
+
 checkout:
   post:
     - git submodule sync
@@ -5,5 +9,12 @@ checkout:
 
 test:
   override:
-    - py.test --verbose --junitxml=$CI_REPORTS/junit.xml:
+    - mkdir $CIRCLE_TEST_REPORTS/pytest:
         parallel: true
+    - py.test --junit-xml=$CIRCLE_TEST_REPORTS/pytest/pytest.xml:
+        parallel: true
+  post:
+    - scp node1:kanji-colorize/.coverage .coverage.1
+    - scp node2:kanji-colorize/.coverage .coverage.2
+    - coverage combine
+    - coverage html
