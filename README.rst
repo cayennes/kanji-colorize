@@ -1,4 +1,4 @@
-.. image:: https://circleci.com/gh/cayennes/kanji-colorize.png?style=badge
+.. image:: https://circleci.com/gh/cayennes/kanji-colorize.svg?style=svg
     :target: https://circleci.com/gh/cayennes/kanji-colorize
 
 ==============
