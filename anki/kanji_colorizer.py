@@ -83,8 +83,6 @@ from aqt.utils import showInfo, askUser
 from aqt.qt import *
 from kanjicolorizer.colorizer import (KanjiVG, KanjiColorizer,
                                       InvalidCharacterError)
-import os
-from codecs import open
 import string
 
 srcField = 'Kanji'
@@ -143,17 +141,9 @@ def addKanji(note, flag=False, currentFieldIndex=None):
         except InvalidCharacterError:
             # silently ignore non-Japanese characters
             continue
-        try:
-            with open(filename,'w', encoding='utf-8') as file:
-                file.write(kc.get_colored_svg(character))
-                mw.col.media.addFile(os.path.abspath(unicode(filename)))
-                dst+=u'<img src="%s">' % filename
-        except IOError as e:
-            if e.errno == FILE_NOT_FOUND:
-                print "file not found: "+filename+". Ignoring ..."
-            else:
-                raise
-
+        char_svg = kc.get_colored_svg(character).encode('utf_8')
+        anki_fname = mw.col.media.writeData(unicode(filename, 'utf_8'), char_svg)
+        dst += '<img src="{!s}">'.format(anki_fname).encode('utf_8')
 
     note[dstField] = dst
     note.flush()
