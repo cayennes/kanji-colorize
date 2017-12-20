@@ -118,7 +118,7 @@ def characters_to_colorize(s):
     return [c for c in s if ord(c) >= 19968 and ord(c) <= 40879]
 
 
-def addKanji(note, flag=False, currentFieldIndex=None):
+def addKanji(note, flag=False, currentFieldIndex=None, skipDstFieldIfSet=True):
     '''
     Checks to see if a kanji should be added, and adds it if so.
     '''
@@ -128,7 +128,10 @@ def addKanji(note, flag=False, currentFieldIndex=None):
     if currentFieldIndex != None: # We've left a field
         # But it isn't the relevant one
         if note.model()['flds'][currentFieldIndex]['name'] != srcField:
-            return None
+            return flag
+
+    if skipDstFieldIfSet and note[dstField]:
+        return flag
 
     srcTxt = mw.col.media.strip(note[srcField])
 
@@ -147,7 +150,7 @@ def addKanji(note, flag=False, currentFieldIndex=None):
 
     note[dstField] = dst
     note.flush()
-    return dst != ''
+    return True
 
 
 # Add a colorized kanji to a Diagram whenever leaving a Kanji field
@@ -171,7 +174,7 @@ def regenerate_all():
     # Find the notes in those models and give them kanji
     for model in models:
         for nid in mw.col.models.nids(model):
-            addKanji(mw.col.getNote(nid))
+            addKanji(mw.col.getNote(nid), skipDstFieldIfSet=False)
     showInfo("Done regenerating colorized kanji diagrams!")
 
 # add menu item
