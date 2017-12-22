@@ -1,5 +1,5 @@
 #!/usr/bin/env python2
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 
 # kanji_colorizer.py is part of kanji-colorize which makes KanjiVG data
 # into colored stroke order diagrams; this is the anki2 addon file.
@@ -128,10 +128,11 @@ def addKanji(note, flag=False, currentFieldIndex=None):
     if currentFieldIndex != None: # We've left a field
         # But it isn't the relevant one
         if note.model()['flds'][currentFieldIndex]['name'] != srcField:
-            return None
+            return flag
 
     srcTxt = mw.col.media.strip(note[srcField])
 
+    oldDst = note[dstField]
     dst=''
     #srcTxt = string.replace(srcTxt, u'\uff5e', u'\u301c').encode('euc-jp')
     for character in characters_to_colorize(unicode(srcTxt)):
@@ -145,9 +146,12 @@ def addKanji(note, flag=False, currentFieldIndex=None):
         anki_fname = mw.col.media.writeData(unicode(filename, 'utf_8'), char_svg)
         dst += '<img src="{!s}">'.format(anki_fname).encode('utf_8')
 
-    note[dstField] = dst
-    note.flush()
-    return dst != ''
+    if dst != oldDst and dst != '':
+        note[dstField] = dst
+        note.flush()
+        return True
+
+    return flag
 
 
 # Add a colorized kanji to a Diagram whenever leaving a Kanji field
