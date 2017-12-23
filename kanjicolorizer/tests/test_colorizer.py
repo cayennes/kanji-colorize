@@ -1,5 +1,5 @@
 #!/usr/bin/env python2
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 
 # test_colorizer.py is part of kanji-colorize which makes KanjiVG data
 # into colored stroke order diagrams
@@ -26,7 +26,7 @@ import os
 from kanjicolorizer import colorizer
 from kanjicolorizer.colorizer import KanjiVG, KanjiColorizer
 
-TOTAL_NUMBER_CHARACTERS = 11379
+TOTAL_NUMBER_CHARACTERS = 11458
 
 
 class KanjiVGInitTest(unittest.TestCase):
