@@ -1,5 +1,5 @@
 #!/usr/bin/env python2
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 
 # setup.py is part of kanji-colorize which makes KanjiVG data into
 # colored stroke order diagrams
@@ -36,7 +36,7 @@ setup(
     description='script and module to create colored stroke order '
         'diagrams based on KanjiVG data',
     long_description=open('README.rst').read(),
-    version='0.10dev',
+    version='0.10',
     author='Cayenne',
     author_email='cayennes@gmail.com',
     url='http://github.com/cayennes/kanji-colorize',
