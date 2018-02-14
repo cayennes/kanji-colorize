@@ -178,7 +178,26 @@ def regenerate_all():
             addKanji(mw.col.getNote(nid))
     showInfo("Done regenerating colorized kanji diagrams!")
 
+def generate_for_new():
+    if not askUser("This option will generate diagrams for notes with "
+                   "an empty {} field only. "
+                   "Proceed?".format(dstField)):
+        return
+    model_ids = [mid for mid in mw.col.models.ids() if modelIsCorrectType(mw.col.models.get(mid))]
+    # Generate search string in the format 
+    #    (mid:123 or mid:456) Kanji:_* Diagram:
+    search_str = '({}) {}:_* {}:'.format(
+        ' or '.join(('mid:'+mid for mid in model_ids)), srcField, dstField)
+    # Find the notes
+    for note_id in mw.col.findNotes(search_str):
+        addKanji(mw.col.getNote(note_id))
+    showInfo("Done regenerating colorized kanji diagrams!")
+
 # add menu item
 do_regenerate_all = QAction("Kanji Colorizer: (re)generate all", mw)
 mw.connect(do_regenerate_all, SIGNAL("triggered()"), regenerate_all)
 mw.form.menuTools.addAction(do_regenerate_all)
+
+do_generate_new = QAction("Kanji Colorizer: generate all new", mw)
+do_generate_new.triggered.connect(generate_for_new)
+mw.form.menuTools.addAction(do_generate_new)
