@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
 # kanjicolorizer.py is part of kanji-colorize which makes KanjiVG data

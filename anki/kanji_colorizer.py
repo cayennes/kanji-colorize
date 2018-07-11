@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 # kanji_colorizer.py is part of kanji-colorize which makes KanjiVG data
@@ -81,9 +81,8 @@ from anki.hooks import addHook
 from aqt import mw
 from aqt.utils import showInfo, askUser
 from aqt.qt import *
-from kanjicolorizer.colorizer import (KanjiVG, KanjiColorizer,
+from .kanjicolorizer.colorizer import (KanjiVG, KanjiColorizer,
                                       InvalidCharacterError)
-import string
 
 srcField = 'Kanji'
 dstField = 'Diagram'
@@ -134,8 +133,8 @@ def addKanji(note, flag=False, currentFieldIndex=None):
 
     oldDst = note[dstField]
     dst=''
-    #srcTxt = string.replace(srcTxt, u'\uff5e', u'\u301c').encode('euc-jp')
-    for character in characters_to_colorize(unicode(srcTxt)):
+
+    for character in characters_to_colorize(str(srcTxt)):
         # write to file; anki works in the media directory by default
         try:
             filename = KanjiVG(character).ascii_filename
@@ -143,8 +142,8 @@ def addKanji(note, flag=False, currentFieldIndex=None):
             # silently ignore non-Japanese characters
             continue
         char_svg = kc.get_colored_svg(character).encode('utf_8')
-        anki_fname = mw.col.media.writeData(unicode(filename, 'utf_8'), char_svg)
-        dst += '<img src="{!s}">'.format(anki_fname).encode('utf_8')
+        anki_fname = mw.col.media.writeData(filename, char_svg)
+        dst += '<img src="{!s}">'.format(anki_fname)
 
     if dst != oldDst and dst != '':
         note[dstField] = dst
@@ -180,5 +179,5 @@ def regenerate_all():
 
 # add menu item
 do_regenerate_all = QAction("Kanji Colorizer: (re)generate all", mw)
-mw.connect(do_regenerate_all, SIGNAL("triggered()"), regenerate_all)
+do_regenerate_all.triggered.connect(regenerate_all)
 mw.form.menuTools.addAction(do_regenerate_all)

@@ -82,7 +82,7 @@ To run the existing tests:
 .. code:: bash
 
     $ python -m kanjicolorizer.colorizer
-    $ python -m unittest discover
+    $ python -m unittest discover -s kanjicolorizer
 
 License
 -------

@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 # setup.py is part of kanji-colorize which makes KanjiVG data into
@@ -79,13 +79,14 @@ def build_anki_addon(options):
     options.anki.builddir.makedirs()
 
     # add addon files
+    (path('anki') / '__init__.py').copy(options.anki.builddir)
     (path('anki') / 'kanji_colorizer.py').copy(options.anki.builddir)
     lib_path = path('build') / 'lib' / 'kanjicolorizer'
     lib_path.copytree(options.anki.builddir / 'kanjicolorizer')
 
-    # add required modules, minus the c in .pyc to get .py files
-    path(argparse.__file__[:-1]).copy(options.anki.builddir)
-    path(colorsys.__file__[:-1]).copy(options.anki.builddir)
+    # add required modules
+    path(argparse.__file__).copy(options.anki.builddir / 'kanjicolorizer')
+    path(colorsys.__file__).copy(options.anki.builddir / 'kanjicolorizer')
 
     # add licenses
     license_dest = options.anki.builddir / 'kanjicolorizer' / 'licenses'

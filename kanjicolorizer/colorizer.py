@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
 # colorizer.py is part of kanji-colorize which makes KanjiVG data
@@ -26,12 +26,20 @@
 # Note: this module is in the middle of being refactored.
 
 import os
-import colorsys
 import re
-import argparse
 from codecs import open
 from errno import ENOENT as FILE_NOT_FOUND
 import sys
+
+# Anki add-on compatibility
+try:
+    import colorsys
+except ModuleNotFoundError:
+    from . import colorsys  # Anki add-on
+try:
+    import argparse
+except ModuleNotFoundError:
+    from . import argparse  # Anki add-on
 
 
 # Function that I want to have after refactoring, currently implemented using
@@ -42,7 +50,7 @@ def colorize(character, mode="spectrum", saturation=0.95, value=0.75,
     """
     Returns a string containing the colorized svg for the character
 
-    >>> svg = colorize(u'a', mode='spectrum', image_size=100,
+    >>> svg = colorize('a', mode='spectrum', image_size=100,
     ...                saturation=0.95, value=0.75)
     >>> 'has been modified' in svg
     True
@@ -69,12 +77,12 @@ class KanjiVG(object):
     basic qualities of the character
     '''
     def __init__(self, character, variant=''):
-        u'''
+        '''
         Create a new KanjiVG object
 
         Either give just the character
 
-        >>> k1 = KanjiVG(u'漢')
+        >>> k1 = KanjiVG('漢')
         >>> print(k1.character)
         漢
         >>> k1.variant
@@ -83,7 +91,7 @@ class KanjiVG(object):
         Or if the character has a variant, give that as a second
         argument
 
-        >>> k2 = KanjiVG(u'字', 'Kaisho')
+        >>> k2 = KanjiVG('字', 'Kaisho')
         >>> print(k2.character)
         字
         >>> k2.variant
@@ -92,10 +100,10 @@ class KanjiVG(object):
         Raises InvalidCharacterError if the character and variant don't
         correspond to known data
 
-        >>> k = KanjiVG((u'Л'))
+        >>> k = KanjiVG('Л')
         Traceback (most recent call last):
             ...
-        InvalidCharacterError: (u'\\u041b', '')
+        InvalidCharacterError: ('\\u041b', '')
 
         '''
         self.character = character
@@ -103,8 +111,7 @@ class KanjiVG(object):
         if self.variant is None:
             self.variant = ''
         try:
-            with open(os.path.join(source_directory, self.ascii_filename),
-                      encoding='utf-8') as f:
+            with open(os.path.join(source_directory, self.ascii_filename)) as f:
                 self.svg = f.read()
         except IOError as e:  # file not found
             if e.errno == FILE_NOT_FOUND:
@@ -114,23 +121,23 @@ class KanjiVG(object):
 
     @classmethod
     def _create_from_filename(cls, filename):
-        u'''
+        '''
         Alternate constructor that uses a KanjiVG filename; used by
         get_all().
 
         >>> k = KanjiVG._create_from_filename('00061.svg')
         >>> k.character
-        u'a'
+        'a'
         '''
         m = re.match('^([0-9a-f]*)-?(.*?).svg$', filename)
-        return cls(unichr(int(m.group(1), 16)), m.group(2))
+        return cls(chr(int(m.group(1), 16)), m.group(2))
 
     @property
     def ascii_filename(self):
-        u'''
+        '''
         An SVG filename in ASCII using the same format KanjiVG uses.
 
-        >>> k = KanjiVG(u'漢')
+        >>> k = KanjiVG('漢')
         >>> k.ascii_filename
         '06f22.svg'
 
@@ -149,10 +156,10 @@ class KanjiVG(object):
 
     @property
     def character_filename(self):
-        u'''
+        '''
         An SVG filename that uses the unicode character
 
-        >>> k = KanjiVG(u'漢')
+        >>> k = KanjiVG('漢')
         >>> print(k.character_filename)
         漢.svg
         '''
@@ -163,7 +170,7 @@ class KanjiVG(object):
 
     @classmethod
     def get_all(cls):
-        u'''
+        '''
         Returns a complete list of KanjiVG objects; everything there is
         data for
 
@@ -178,7 +185,7 @@ class KanjiVG(object):
 
 
 class KanjiColorizer:
-    u"""
+    """
     Class that creates colored stroke order diagrams out of kanjivg
     data, and writes them to file.
 
@@ -188,7 +195,7 @@ class KanjiColorizer:
     Settings can set by initializing with a string in the same format as
     the command line.
     >>> test_output_dir = os.path.join('test', 'colorized-kanji')
-    >>> my_args = ' '.join(['--characters', u'aあ漢',
+    >>> my_args = ' '.join(['--characters', 'aあ漢',
     ...                     '--output', test_output_dir])
     >>> kc = KanjiColorizer(my_args)
 
@@ -262,7 +269,7 @@ class KanjiColorizer:
                     help="image size in pixels; they're square so this "
                         'will be both height and width '
                         '(default: %(default)s)')
-        self._parser.add_argument('--characters', type=unicode,
+        self._parser.add_argument('--characters', type=str,
                     help='a list of characters to include, without '
                          'spaces; if this option is used, no variants '
                          'will be included; if this option is not '
@@ -289,13 +296,8 @@ class KanjiColorizer:
         >>> sys.argv = ['this.py', '--mode', 'contrast']
         >>> kc.read_cl_args()
         >>> kc.settings.mode
-        u'contrast'
+        'contrast'
         """
-        # Put argv in the correct encoding, with a default for the pytest case
-        for i in range(len(sys.argv)):
-            sys.argv[i] = sys.argv[i].decode(getattr(sys.stdin,
-                                                     'encoding',
-                                                     'UTF-8'))
         self.settings = self._parser.parse_args()
 
     def read_arg_string(self, argstring):
@@ -317,7 +319,7 @@ class KanjiColorizer:
         >>> kc = KanjiColorizer()
         >>> svg = kc.get_colored_svg('a')
         >>> svg.splitlines()[0]
-        u'<?xml version="1.0" encoding="UTF-8"?>'
+        '<?xml version="1.0" encoding="UTF-8"?>'
         >>> svg.find('00061')
         1780
         >>> svg.find('has been modified')
@@ -336,7 +338,7 @@ class KanjiColorizer:
         Silently ignores invalid characters.
 
         >>> test_output_dir = os.path.join('test', 'colorized-kanji')
-        >>> kc = KanjiColorizer(' '.join(['--characters', u'aあ漢',
+        >>> kc = KanjiColorizer(' '.join(['--characters', 'aあ漢',
         ...                               '--output', test_output_dir]))
         >>> kc.write_all()
 
@@ -386,7 +388,7 @@ class KanjiColorizer:
                 f.write(svg)
 
     def _modify_svg(self, svg):
-        u"""
+        """
         Applies all desired changes to the SVG
 
         >>> kc = KanjiColorizer('')
@@ -396,7 +398,7 @@ class KanjiColorizer:
         >>> desired_svg = open(
         ...    os.path.join(
         ...        'test', 'default_results', 'kanji-colorize-spectrum',
-        ...        u'漢.svg'),
+        ...        '漢.svg'),
         ...    'r', encoding='utf-8').read()
         >>> import difflib
         >>> for line in difflib.context_diff(
@@ -625,7 +627,7 @@ The original SVG has the following copyright:
         '#09bfbf'
         """
         color = colorsys.hsv_to_rgb(h, s, v)
-        return '#%02x%02x%02x' % tuple([i * 255 for i in color])
+        return '#%02x%02x%02x' % tuple([int(i * 255) for i in color])
 
     def _color_generator(self, n):
         """
@@ -644,11 +646,11 @@ The original SVG has the following copyright:
         """
         if (self.settings.mode == "contrast"):
             angle = 0.618033988749895  # conjugate of the golden ratio
-            for i in 2 * range(n):
+            for i in 2 * list(range(n)):
                 yield self._hsv_to_rgbhexcode(i * angle,
                     self.settings.saturation, self.settings.value)
         else:  # spectrum is default
-            for i in 2 * range(n):
+            for i in 2 * list(range(n)):
                 yield self._hsv_to_rgbhexcode(float(i) / n,
                     self.settings.saturation, self.settings.value)
 
