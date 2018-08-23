@@ -103,7 +103,7 @@ class KanjiVG(object):
         >>> k = KanjiVG('Л')
         Traceback (most recent call last):
             ...
-        InvalidCharacterError: ('\\u041b', '')
+        kanjicolorizer.colorizer.InvalidCharacterError: ('\\u041b', '')
 
         '''
         self.character = character
@@ -115,7 +115,7 @@ class KanjiVG(object):
                 self.svg = f.read()
         except IOError as e:  # file not found
             if e.errno == FILE_NOT_FOUND:
-                raise InvalidCharacterError(character, variant)
+                raise InvalidCharacterError(character, variant) from e
             else:
                 raise
 
