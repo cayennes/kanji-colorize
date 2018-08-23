@@ -1,9 +1,0 @@
-checkout:
-  post:
-    - git submodule sync
-    - git submodule update --init
-
-test:
-  override:
-    - py.test --verbose --junitxml=$CI_REPORTS/junit.xml:
-        parallel: true

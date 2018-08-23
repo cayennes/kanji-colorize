@@ -1,0 +1,25 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/python:3.6.6-stretch
+    steps:
+      - checkout
+      - run: git submodule sync
+      - run: git submodule update --init
+      - run:
+          name: install dependencies
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install -r requirements.txt
+      - run:
+          name: run tests
+          command: |
+            mkdir test-reports
+            . venv/bin/activate
+            py.test --verbose --junitxml=test-reports/junit.xml
+      - store_test_results:
+          path: test-reports/
+      - store_artifacts:
+          path: test-reports/
