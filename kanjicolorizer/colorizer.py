@@ -27,7 +27,6 @@
 
 import os
 import re
-from codecs import open
 from errno import ENOENT as FILE_NOT_FOUND
 import sys
 
@@ -111,7 +110,8 @@ class KanjiVG(object):
         if self.variant is None:
             self.variant = ''
         try:
-            with open(os.path.join(source_directory, self.ascii_filename)) as f:
+            with open(os.path.join(source_directory, self.ascii_filename),
+                      'r', encoding="utf-8") as f:
                 self.svg = f.read()
         except IOError as e:  # file not found
             if e.errno == FILE_NOT_FOUND:
