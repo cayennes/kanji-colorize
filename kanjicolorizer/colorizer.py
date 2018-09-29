@@ -111,7 +111,7 @@ class KanjiVG(object):
             self.variant = ''
         try:
             with open(os.path.join(source_directory, self.ascii_filename),
-                      'r', encoding="utf-8") as f:
+                      'r', encoding='utf-8') as f:
                 self.svg = f.read()
         except IOError as e:  # file not found
             if e.errno == FILE_NOT_FOUND:
