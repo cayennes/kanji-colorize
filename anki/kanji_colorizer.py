@@ -37,45 +37,6 @@
 # settings, use the "Kanji Colorizer: (re)generate all" option in the
 # tools menu.
 
-# CONFIGURATION
-
-# Change the settings by editing the part between quotation marks in
-# the last line of each block; leave everything else as it is.
-
-# MODE
-config = "--mode "
-# spectrum: color progresses evenly through the spectrum; nice for
-#           seeing the way the kanji is put together at a glance, but
-#           has the disadvantage of using similar colors for consecutive
-#           strokes which can make it less clear which number goes with
-#           which number goes with which stroke.
-# contrast: maximizes the contrast among any group of consecutive
-#           strokes, using the golden ratio; also provides consistency
-#           by using the same sequence for every kanji
-config += "spectrum"
-
-# uncomment this line to color whole groups instead of strokes
-#config += " --group-mode "
-
-# SATURATION
-config += " --saturation "
-# --saturation: a decimal indicating saturation where 0 is
-# white/gray/black and 1 is completely colorful
-config += "0.95"
-
-# VALUE
-config += " --value "
-# --value: a decimal indicating value where 0 is black and 1 is colored
-# or white
-config += "0.75"
-
-# IMAGE SIZE
-config += " --image-size "
-# --image-size: image size in pixels; they're square so this will be
-# both height and width
-config += "327"
-
-# END CONFIGURATION
 
 from anki.hooks import addHook
 from aqt import mw
@@ -83,6 +44,21 @@ from aqt.utils import showInfo, askUser
 from aqt.qt import *
 from .kanjicolorizer.colorizer import (KanjiVG, KanjiColorizer,
                                       InvalidCharacterError)
+
+# Configuration
+
+addon_config = mw.addonManager.getConfig(__name__)
+
+config = "--mode "
+config += addon_config["mode"]
+if addon_config["group-mode"]:
+  config += " --group-mode "
+config += " --saturation "
+config += str(addon_config["saturation"])
+config += " --value "
+config += str(addon_config["value"])
+config += " --image-size "
+config += str(addon_config["image-size"])
 
 srcField = 'Kanji'
 dstField = 'Diagram'

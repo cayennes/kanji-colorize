@@ -36,7 +36,7 @@ setup(
     description='script and module to create colored stroke order '
         'diagrams based on KanjiVG data',
     long_description=open('README.rst').read(),
-    version='0.11dev',
+    version='0.12',
     author='Cayenne',
     author_email='cayennes@gmail.com',
     url='http://github.com/cayennes/kanji-colorize',
@@ -81,6 +81,8 @@ def build_anki_addon(options):
     # add addon files
     (path('anki') / '__init__.py').copy(options.anki.builddir)
     (path('anki') / 'kanji_colorizer.py').copy(options.anki.builddir)
+    (path('anki') / 'config.md').copy(options.anki.builddir)
+    (path('anki') / 'config.json').copy(options.anki.builddir)
     lib_path = path('build') / 'lib' / 'kanjicolorizer'
     lib_path.copytree(options.anki.builddir / 'kanjicolorizer')
 
