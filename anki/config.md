@@ -5,5 +5,8 @@
 * `value`: a decimal indicating value where 0 is black and 1 is colored or white (default: `0.75`)
 * `image-size`: image size in pixels; they're square so this will be both height and width (default: `327`)
 * `group-mode`: Somewhat buggy option to color groups of kanji instead of strokes. (default: `false`)
+* `model`: name of the model containing kanji and diagram fields
+* `src-field`: name of the field that contains the kanji
+* `dst-field`: name of the field to save diagram to
 
 You will need to restart anki for changes to take effect.

@@ -60,8 +60,17 @@ config += str(addon_config["value"])
 config += " --image-size "
 config += str(addon_config["image-size"])
 
-srcField = 'Kanji'
-dstField = 'Diagram'
+modelNameSubstring = 'japanese'
+srcField           = 'Kanji'
+dstField           = 'Diagram'
+
+# avoid errors due to invalid config
+if 'model' in addon_config and type(addon_config['model']) is str:
+    modelNameSubstring = addon_config['model'].lower()
+if 'src-field' in addon_config and type(addon_config['src-field']) is str:
+    srcField = addon_config['src-field']
+if 'dst-field' in addon_config and type(addon_config['dst-field']) is str:
+    dstField = addon_config['dst-field']
 
 kc = KanjiColorizer(config)
 
@@ -74,7 +83,7 @@ def modelIsCorrectType(model):
     # Does the model name have Japanese in it?
     model_name = model['name'].lower()
     fields = mw.col.models.fieldNames(model)
-    return ('japanese' in model_name and
+    return (modelNameSubstring in model_name and
                          srcField in fields and
                          dstField in fields)
 
