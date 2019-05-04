@@ -2,4 +2,7 @@
  "saturation": 0.95,
  "value": 0.75,
  "image-size": 327,
- "group-mode": false}
+ "group-mode": false,
+ "model":"japanese",
+ "src-field":"Kanji",
+ "dst-field":"Diagram"}
