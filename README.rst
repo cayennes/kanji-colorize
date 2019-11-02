@@ -77,12 +77,28 @@ anything you add.  Either doctest or unittest is fine, though ideally
 the doctests would contain executable examples that fully illustrate the
 function and the unittest tests would contain further worthwhile checks.
 
+Activate the virtual environment and install requirements:
+
+.. code:: bash
+
+    $ python3 -m venv venv
+    $ source venv/bin/activate
+    $ pip install -r requirements.txt
+
 To run the existing tests:
 
 .. code:: bash
 
     $ python -m kanjicolorizer.colorizer
     $ python -m unittest discover -s kanjicolorizer
+
+To create a new release:
+
+.. code :: bash
+
+    $ paver dist_anki_addon
+
+Test by unzipping the zip file in `dist` into a new directory in `~/.local/share/Anki2/addons21` (or the equivalent for the OS being tested).
 
 License
 -------
