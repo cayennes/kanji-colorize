@@ -175,13 +175,15 @@ def generate_for_new():
     # Find the notes
     for note_id in mw.col.findNotes(search_str):
         addKanji(mw.col.getNote(note_id))
-    showInfo("Done regenerating colorized kanji diagrams!")
+    showInfo("Done generating colorized kanji diagrams!")
 
-# add menu item
-do_regenerate_all = QAction("Kanji Colorizer: (re)generate all", mw)
-do_regenerate_all.triggered.connect(regenerate_all)
-mw.form.menuTools.addAction(do_regenerate_all)
+# add menu items
+submenu = mw.form.menuTools.addMenu("Kanji Colorizer")
 
-do_generate_new = QAction("Kanji Colorizer: generate all new", mw)
+do_generate_new = QAction("generate all new", mw)
 do_generate_new.triggered.connect(generate_for_new)
-mw.form.menuTools.addAction(do_generate_new)
+submenu.addAction(do_generate_new)
+
+do_regenerate_all = QAction("(re)generate all", mw)
+do_regenerate_all.triggered.connect(regenerate_all)
+submenu.addAction(do_regenerate_all)
