@@ -87,19 +87,24 @@ def modelIsCorrectType(model):
                          srcField in fields and
                          dstField in fields)
 
+def is_kanji(c):
+    '''
+    Boolean indicating if the character is in the kanji unicode range
+    '''
+    return ord(c) >= 19968 and ord(c) <= 40879
+
 
 def characters_to_colorize(s):
     '''
-    Given a string, returns a lost of characters to colorize
+    Given a string, returns a list of characters to colorize
 
-    If the string consists of only a single character, returns a list
-    containing that character.  If it is longer, returns a list of  only the
-    kanji.
-
+    If the string mixes kanji and other characters, it will return
+    only the kanji. Otherwise it will return all characters.
     '''
-    if len(s) <= 1:
-        return list(s)
-    return [c for c in s if ord(c) >= 19968 and ord(c) <= 40879]
+    kanji = [c for c in s if is_kanji(c)]
+    if len(kanji) >= 1:
+        return kanji
+    return list(s)
 
 
 def addKanji(note, flag=False, currentFieldIndex=None):
