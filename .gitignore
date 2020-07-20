@@ -3,8 +3,6 @@
 kanji-colorize-*
 kanjivg
 kanji
-/build
-/dist
 MANIFEST
 setup.py
 venv
