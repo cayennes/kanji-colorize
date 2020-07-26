@@ -8,5 +8,9 @@
 * `model`: name of the model containing kanji and diagram fields
 * `src-field`: name of the field that contains the kanji
 * `dst-field`: name of the field to save diagram to
+* `diagrammed-characters`: which characters from the source field to produce diagrams for:
+    * `all`: all characters
+    * `kanji`: only kanji, not kana or anything else
+    * `auto`: if there are some kanji and some other characters only include the kanji; otherwise include all characters
 
-You will need to restart anki for changes to take effect.
+Some changes will not take effect until you restart anki.

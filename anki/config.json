@@ -5,4 +5,5 @@
  "group-mode": false,
  "model":"japanese",
  "src-field":"Kanji",
- "dst-field":"Diagram"}
+ "dst-field":"Diagram",
+ "diagrammed-characters":"auto"}

@@ -101,10 +101,16 @@ def characters_to_colorize(s):
     If the string mixes kanji and other characters, it will return
     only the kanji. Otherwise it will return all characters.
     '''
-    kanji = [c for c in s if is_kanji(c)]
-    if len(kanji) >= 1:
-        return kanji
-    return list(s)
+    conf = mw.addonManager.getConfig(__name__)['diagrammed-characters']
+    if conf == 'all':
+        return list(s)
+    elif conf == 'kanji':
+        return [c for c in s if is_kanji(c)]
+    else:
+        just_kanji = [c for c in s if is_kanji(c)]
+        if len(just_kanji) >= 1:
+            return just_kanji
+        return list(s)
 
 
 def addKanji(note, flag=False, currentFieldIndex=None):
