@@ -137,7 +137,9 @@ def addKanji(note, flag=False, currentFieldIndex=None):
 
     if dst != oldDst and dst != '':
         note[dstField] = dst
-        note.flush()
+        # if we're editing an existing card, flush the changes
+        if note.id != 0:
+            note.flush()
         return True
 
     return flag
