@@ -184,7 +184,7 @@ def generate_for_new():
     # Generate search string in the format 
     #    (mid:123 or mid:456) Kanji:_* Diagram:
     search_str = '({}) {}:_* {}:'.format(
-        ' or '.join(('mid:'+mid for mid in model_ids)), srcField, dstField)
+        ' or '.join(('mid:'+str(mid) for mid in model_ids)), srcField, dstField)
     # Find the notes
     for note_id in mw.col.findNotes(search_str):
         addKanji(mw.col.getNote(note_id))
