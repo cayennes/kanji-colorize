@@ -63,6 +63,7 @@ config += str(addon_config["image-size"])
 modelNameSubstring = 'japanese'
 srcField           = 'Kanji'
 dstField           = 'Diagram'
+overwrite          = True
 
 # avoid errors due to invalid config
 if 'model' in addon_config and type(addon_config['model']) is str:
@@ -71,6 +72,8 @@ if 'src-field' in addon_config and type(addon_config['src-field']) is str:
     srcField = addon_config['src-field']
 if 'dst-field' in addon_config and type(addon_config['dst-field']) is str:
     dstField = addon_config['dst-field']
+if 'overwrite-dest' in addon_config and type(addon_config['overwrite-dest']) is bool:
+    overwrite = addon_config['overwrite-dest']
 
 kc = KanjiColorizer(config)
 
@@ -140,6 +143,9 @@ def addKanji(note, flag=False, currentFieldIndex=None):
         char_svg = kc.get_colored_svg(character).encode('utf_8')
         anki_fname = mw.col.media.writeData(filename, char_svg)
         dst += '<img src="{!s}">'.format(anki_fname)
+
+    if oldDst != '' and not overwrite:
+        return flag
 
     if dst != oldDst and dst != '':
         note[dstField] = dst

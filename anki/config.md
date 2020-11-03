@@ -12,5 +12,6 @@
     * `all`: all characters
     * `kanji`: only kanji, not kana or anything else
     * `auto`: if there are some kanji and some other characters only include the kanji; otherwise include all characters
+* `overwrite-dest`: set to true by default. If false the destination field will not be overwritten if there is anything in it.
 
 Some changes will not take effect until you restart anki.
