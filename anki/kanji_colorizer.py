@@ -187,6 +187,9 @@ def generate_for_new():
                    "Proceed?".format(dstField)):
         return
     model_ids = [mid for mid in mw.col.models.ids() if modelIsCorrectType(mw.col.models.get(mid))]
+    if not model_ids:
+        showInfo("Can not find any relevant models. Make sure model, src-field,-and dst-field are set correctly in your config.")
+        return
     # Generate search string in the format 
     #    (mid:123 or mid:456) Kanji:_* Diagram:
     search_str = '({}) {}:_* {}:'.format(
