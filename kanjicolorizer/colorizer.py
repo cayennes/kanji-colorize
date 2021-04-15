@@ -283,6 +283,13 @@ class KanjiColorizer:
                         '(default: %(default)s)')
         self._parser.add_argument('-o', '--output-directory',
                     default='colorized-kanji')
+        self._parser.add_argument('--grid', default='none', type=str,
+                    choices=['none', '4', '8', 'diag', 'diag4', 'diag8'],
+                    help='none: no grid is drawn. 4: a 2x2 grid is drawn. '
+                        '8; a 4x4 grid is drawn. diag: diagonals are drawn. '
+                        'diag4: a 2x2 grid with diagonals is drawn. '
+                        'diag8: a 4x4 grid with diagonals is drawn. '
+                        '(default: ' '%(default)s)')
 
     # Public methods
 
@@ -566,6 +573,7 @@ settings:
     saturation: """ + str(self.settings.saturation) + """
     value: """ + str(self.settings.value) + """
     image_size: """ + str(self.settings.image_size) + """
+    grid: """ + str(self.settings.grid) + """
 It remains under a Creative Commons-Attribution-Share Alike 3.0 License.
 
 The original SVG has the following copyright:
