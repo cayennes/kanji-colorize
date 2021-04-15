@@ -419,6 +419,9 @@ class KanjiColorizer:
         if self.settings.group_mode:
             svg = self._remove_strokes(svg)
 
+        if self.settings.grid != "none":
+            svg = self._add_grid(svg)
+
         svg = self._resize_svg(svg)
         svg = self._comment_copyright(svg)
         return svg
@@ -540,6 +543,44 @@ class KanjiColorizer:
 
                 nsvg+=line+"\n"
             return nsvg
+
+    def _add_grid(self, svg):
+        """
+        Add a grid to the svg, depending on the setting the program is run with.
+        The grid does not need rescaling.
+
+        >>> svg = '<svg  width="109" height="109" viewBox="0 0 109 109">'
+        >>> kc = KanjiColorizer('--grid 4')
+        >>> kc._add_grid(svg)
+        '<svg  width="109" height="109" viewBox="0 0 109 109">\n
+        <g id="kvg:grid" stroke="grey">\n
+        \t<path id="kvg:grid-4h" d="M0,163.5H327"/>\n
+        \t<path id="kvg:grid-4v" d="M163.5,0V327"/>\n
+        </g>'
+        >>> svg = '<svg  width="109" height="109" viewBox="0 0 109 109">'
+        >>> kc = KanjiColorizer('--grid diag --image-size 109')
+        >>> kc._add_grid(svg)
+        '<svg  width="109" height="109" viewBox="0 0 109 109">\n
+        <g id="kvg:grid" stroke="grey">\n
+        \t<path id="kvg:grid-d1" d="M0,0L109,109"/>\n'
+        \t<path id="kvg:grid-d1" d="M0,109L109,0"/>\n'
+        </g>'
+        """
+        grid = '\n<g id="kvg:grid" stroke="grey">\n'
+        if "4" in self.settings.grid or "8" in self.settings.grid:
+            grid = grid + '\t<path id="kvg:grid-4h" d="M0,' + str(self.settings.image_size/2) + 'H' + str(self.settings.image_size) + '"/>\n'
+            grid = grid + '\t<path id="kvg:grid-4v" d="M' + str(self.settings.image_size/2) + ',0V' + str(self.settings.image_size) + '"/>\n'
+        if "8" in self.settings.grid:
+            grid = grid + '\t<path id="kvg:grid-4h1" d="M0,' + str(self.settings.image_size/4) + 'H' + str(self.settings.image_size) + '"/>\n'
+            grid = grid + '\t<path id="kvg:grid-4h2" d="M0,' + str(self.settings.image_size*3/4) + 'H' + str(self.settings.image_size) + '"/>\n'
+            grid = grid + '\t<path id="kvg:grid-4v1" d="M' + str(self.settings.image_size/4) + ',0V' + str(self.settings.image_size) + '"/>\n'
+            grid = grid + '\t<path id="kvg:grid-4v2" d="M' + str(self.settings.image_size*3/4) + ',0V' + str(self.settings.image_size) + '"/>\n'
+        if "diag" in self.settings.grid:
+            grid = grid + '\t<path id="kvg:grid-d1" d="M0,0L' + str(self.settings.image_size) + ',' + str(self.settings.image_size) + '"/>\n'
+            grid = grid + '\t<path id="kvg:grid-d1" d="M0,' + str(self.settings.image_size) + 'L' + str(self.settings.image_size) + ',0"/>\n'
+        grid = grid + '</g>\n'
+        place_after = '<svg xmlns="http://www.w3.org/2000/svg" width="109" height="109" viewBox="0 0 109 109">'
+        return svg.replace(place_after, place_after + grid)
 
     def _comment_copyright(self, svg):
         """
