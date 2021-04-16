@@ -328,7 +328,7 @@ class KanjiColorizer:
         >>> svg.splitlines()[0]
         '<?xml version="1.0" encoding="UTF-8"?>'
         >>> svg.find('00061')
-        1780
+        1795
         >>> svg.find('has been modified')
         54
 
@@ -549,24 +549,16 @@ class KanjiColorizer:
         Add a grid to the svg, depending on the setting the program is run with.
         The grid does not need rescaling.
 
-        >>> svg = '<svg  width="109" height="109" viewBox="0 0 109 109">'
+        >>> svg = '<svg xmlns="http://www.w3.org/2000/svg" width="109" height="109" viewBox="0 0 109 109">\\n'
         >>> kc = KanjiColorizer('--grid 4')
         >>> kc._add_grid(svg)
-        '<svg  width="109" height="109" viewBox="0 0 109 109">\n
-        <g id="kvg:grid" stroke="grey">\n
-        \t<path id="kvg:grid-4h" d="M0,163.5H327"/>\n
-        \t<path id="kvg:grid-4v" d="M163.5,0V327"/>\n
-        </g>'
-        >>> svg = '<svg  width="109" height="109" viewBox="0 0 109 109">'
+        '<svg xmlns="http://www.w3.org/2000/svg" width="109" height="109" viewBox="0 0 109 109">\\n<g id="kvg:grid" stroke="grey">\\n\\t<path id="kvg:grid-4h" d="M0,163.5H327"/>\\n\\t<path id="kvg:grid-4v" d="M163.5,0V327"/>\\n</g>\\n'
+        >>> svg = '<svg xmlns="http://www.w3.org/2000/svg" width="109" height="109" viewBox="0 0 109 109">\\n'
         >>> kc = KanjiColorizer('--grid diag --image-size 109')
         >>> kc._add_grid(svg)
-        '<svg  width="109" height="109" viewBox="0 0 109 109">\n
-        <g id="kvg:grid" stroke="grey">\n
-        \t<path id="kvg:grid-d1" d="M0,0L109,109"/>\n'
-        \t<path id="kvg:grid-d1" d="M0,109L109,0"/>\n'
-        </g>'
+        '<svg xmlns="http://www.w3.org/2000/svg" width="109" height="109" viewBox="0 0 109 109">\\n<g id="kvg:grid" stroke="grey">\\n\\t<path id="kvg:grid-d1" d="M0,0L109,109"/>\\n\\t<path id="kvg:grid-d1" d="M0,109L109,0"/>\\n</g>\\n'
         """
-        grid = '\n<g id="kvg:grid" stroke="grey">\n'
+        grid = '<g id="kvg:grid" stroke="grey">\n'
         if "4" in self.settings.grid or "8" in self.settings.grid:
             grid = grid + '\t<path id="kvg:grid-4h" d="M0,' + str(self.settings.image_size/2) + 'H' + str(self.settings.image_size) + '"/>\n'
             grid = grid + '\t<path id="kvg:grid-4v" d="M' + str(self.settings.image_size/2) + ',0V' + str(self.settings.image_size) + '"/>\n'
@@ -579,7 +571,7 @@ class KanjiColorizer:
             grid = grid + '\t<path id="kvg:grid-d1" d="M0,0L' + str(self.settings.image_size) + ',' + str(self.settings.image_size) + '"/>\n'
             grid = grid + '\t<path id="kvg:grid-d1" d="M0,' + str(self.settings.image_size) + 'L' + str(self.settings.image_size) + ',0"/>\n'
         grid = grid + '</g>\n'
-        place_after = '<svg xmlns="http://www.w3.org/2000/svg" width="109" height="109" viewBox="0 0 109 109">'
+        place_after = '<svg xmlns="http://www.w3.org/2000/svg" width="109" height="109" viewBox="0 0 109 109">\n'
         return svg.replace(place_after, place_after + grid)
 
     def _comment_copyright(self, svg):
