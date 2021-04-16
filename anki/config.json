@@ -7,4 +7,5 @@
  "src-field":"Kanji",
  "dst-field":"Diagram",
  "diagrammed-characters":"auto",
- "overwrite-dest": true}
+ "overwrite-dest": true,
+ "grid": "none"}
