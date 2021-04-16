@@ -286,7 +286,7 @@ class KanjiColorizer:
         self._parser.add_argument('--grid', default='none', type=str,
                     choices=['none', '4', '8', 'diag', 'diag4', 'diag8'],
                     help='none: no grid is drawn. 4: a 2x2 grid is drawn. '
-                        '8; a 4x4 grid is drawn. diag: diagonals are drawn. '
+                        '8: a 4x4 grid is drawn. diag: diagonals are drawn. '
                         'diag4: a 2x2 grid with diagonals is drawn. '
                         'diag8: a 4x4 grid with diagonals is drawn. '
                         '(default: ' '%(default)s)')
