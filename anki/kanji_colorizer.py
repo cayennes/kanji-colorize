@@ -62,7 +62,7 @@ config += str(addon_config["image-size"])
 
 modelNameSubstring = 'japanese'
 srcField           = 'Kanji'
-dstField           = 'Diagram'
+dstFields           = ['Diagram']
 overwrite          = True
 
 # avoid errors due to invalid config
@@ -71,7 +71,9 @@ if 'model' in addon_config and type(addon_config['model']) is str:
 if 'src-field' in addon_config and type(addon_config['src-field']) is str:
     srcField = addon_config['src-field']
 if 'dst-field' in addon_config and type(addon_config['dst-field']) is str:
-    dstField = addon_config['dst-field']
+    dstFields = [addon_config['dst-field']]
+if 'dst-field' in addon_config and type(addon_config['dst-field']) is list:
+    dstFields = addon_config['dst-field']
 if 'overwrite-dest' in addon_config and type(addon_config['overwrite-dest']) is bool:
     overwrite = addon_config['overwrite-dest']
 
@@ -86,9 +88,10 @@ def modelIsCorrectType(model):
     # Does the model name have Japanese in it?
     model_name = model['name'].lower()
     fields = mw.col.models.fieldNames(model)
+    any_destination_field_exist = any(field for field in dstFields if field in fields)
     return (modelNameSubstring in model_name and
                          srcField in fields and
-                         dstField in fields)
+                         any_destination_field_exist)
 
 def is_kanji(c):
     '''
@@ -129,11 +132,17 @@ def addKanji(note, flag=False, currentFieldIndex=None):
             return flag
 
     srcTxt = mw.col.media.strip(note[srcField])
+    existingDstFields = [field for field in dstFields if field in mw.col.models.fieldNames(note.model())]
 
-    oldDst = note[dstField]
-    dst=''
+    note_edited = False
+    characters = characters_to_colorize(str(srcTxt))
 
-    for character in characters_to_colorize(str(srcTxt)):
+    last_destination_field_contents = note[existingDstFields[-1]]
+
+    for dstField, character in zip(existingDstFields, characters):
+        oldDst = note[dstField]
+        dst=''
+
         # write to file; anki works in the media directory by default
         try:
             filename = KanjiVG(character).ascii_filename
@@ -144,17 +153,42 @@ def addKanji(note, flag=False, currentFieldIndex=None):
         anki_fname = mw.col.media.writeData(filename, char_svg)
         dst += '<img src="{!s}">'.format(anki_fname)
 
-    if oldDst != '' and not overwrite:
-        return flag
+        if oldDst != '' and not overwrite:
+            continue
 
-    if dst != oldDst and dst != '':
-        note[dstField] = dst
-        # if we're editing an existing card, flush the changes
-        if note.id != 0:
-            note.flush()
-        return True
+        if dst != oldDst and dst != '':
+            note[dstField] = dst
+            # if we're editing an existing card, flush the changes
+            if note.id != 0:
+                note.flush()
+            note_edited = True
 
-    return flag
+    # Put leftover characters in the last destination. However if it isn't empty and overwrite is false,
+    # don't write any characters to it.
+    if len(characters) > len(existingDstFields) and (last_destination_field_contents == '' or overwrite):
+        dstField = existingDstFields[-1]
+        oldDst = note[dstField]
+        dst = note[dstField]
+
+        for character in characters[len(existingDstFields):]:
+            # write to file; anki works in the media directory by default
+            try:
+                filename = KanjiVG(character).ascii_filename
+            except InvalidCharacterError:
+                # silently ignore non-Japanese characters
+                continue
+            char_svg = kc.get_colored_svg(character).encode('utf_8')
+            anki_fname = mw.col.media.writeData(filename, char_svg)
+            dst += '<img src="{!s}">'.format(anki_fname)
+
+        if dst != oldDst and dst != '':
+            note[dstField] = dst
+            # if we're editing an existing card, flush the changes
+            if note.id != 0:
+                note.flush()
+            note_edited = True
+
+    return note_edited or flag
 
 
 # Add a colorized kanji to a Diagram whenever leaving a Kanji field
@@ -184,16 +218,16 @@ def regenerate_all():
 def generate_for_new():
     if not askUser("This option will generate diagrams for notes with "
                    "an empty {} field only. "
-                   "Proceed?".format(dstField)):
+                   "Proceed?".format(dstFields)):
         return
     model_ids = [mid for mid in mw.col.models.ids() if modelIsCorrectType(mw.col.models.get(mid))]
     if not model_ids:
         showInfo("Can not find any relevant models. Make sure model, src-field,-and dst-field are set correctly in your config.")
         return
-    # Generate search string in the format 
+    # Generate search string in the format
     #    (mid:123 or mid:456) Kanji:_* Diagram:
     search_str = '({}) {}:_* {}:'.format(
-        ' or '.join(('mid:'+str(mid) for mid in model_ids)), srcField, dstField)
+        ' or '.join(('mid:'+str(mid) for mid in model_ids)), srcField, dstFields)
     # Find the notes
     for note_id in mw.col.findNotes(search_str):
         addKanji(mw.col.getNote(note_id))
