@@ -80,6 +80,7 @@ function and the unittest tests would contain further worthwhile checks.
 The first time you clone the project, you need to get the submodule with the uncolored diagrams:
 
 .. code:: bash
+
     $ git submodule init
     $ git submodule update
 
