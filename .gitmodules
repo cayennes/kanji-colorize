@@ -1,3 +1,3 @@
 [submodule "kanjicolorizer/data/kanjivg"]
 	path = kanjicolorizer/data/kanjivg
-	url = git://github.com/KanjiVG/kanjivg.git
+	url = git@github.com:KanjiVG/kanjivg.git
