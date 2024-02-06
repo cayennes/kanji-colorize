@@ -13,5 +13,12 @@
     * `kanji`: only kanji, not kana or anything else
     * `auto`: if there are some kanji and some other characters only include the kanji; otherwise include all characters
 * `overwrite-dest`: set to true by default. If false the destination field will not be overwritten if there is anything in it.
+* `grid`: options to draw a grid (default: `none`):
+    * `none`: no grid
+    * `4`: a 2x2 grid
+    * `8`: a 4x4 grid
+    * `diag`: diagonals
+    * `diag4`: a 2x2 grid with diagonals
+    * `diag8`: a 4x4 grid with diagonals
 
 Some changes will not take effect until you restart anki.
