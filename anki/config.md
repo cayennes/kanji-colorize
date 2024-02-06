@@ -7,7 +7,7 @@
 * `group-mode`: Somewhat buggy option to color groups of kanji instead of strokes. (default: `false`)
 * `model`: name of the model containing kanji and diagram fields
 * `src-field`: name of the field that contains the kanji
-* `dst-field`: name of the field to save diagram to
+* `dst-field`: name of the field to save diagram to. Can be an array of names, in which case one diagram will be written to each destination, and the leftover characters will be written to the last destination.
 * `diagrammed-characters`: which characters from the source field to produce diagrams for:
     * `all`: all characters
     * `kanji`: only kanji, not kana or anything else
