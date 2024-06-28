@@ -206,7 +206,7 @@ def regenerate_all():
     # checking every note
     if not askUser("Do you want to regenerate all kanji diagrams? "
                    'This may take some time and will overwrite the '
-                   'destination Diagram fields.'):
+                   'destination Diagram field(s).'):
         return
     models = [m for m in mw.col.models.all() if modelIsCorrectType(m)]
     # Find the notes in those models and give them kanji
@@ -217,17 +217,19 @@ def regenerate_all():
 
 def generate_for_new():
     if not askUser("This option will generate diagrams for notes with "
-                   "an empty {} field only. "
-                   "Proceed?".format(dstFields)):
+                   "empty {} field(s) only."
+                   "Proceed?".format(', '.join(dstFields))):
         return
     model_ids = [mid for mid in mw.col.models.ids() if modelIsCorrectType(mw.col.models.get(mid))]
     if not model_ids:
-        showInfo("Can not find any relevant models. Make sure model, src-field,-and dst-field are set correctly in your config.")
+        showInfo("Can not find any relevant models. Make sure model, src-field, and dst-field are set correctly in your config.")
         return
     # Generate search string in the format
     #    (mid:123 or mid:456) Kanji:_* Diagram:
-    search_str = '({}) {}:_* {}:'.format(
-        ' or '.join(('mid:'+str(mid) for mid in model_ids)), srcField, dstFields)
+    search_str = '({}) {}:_* {}'.format(
+      ' or '.join(('mid:'+str(mid) for mid in model_ids)),
+      srcField,
+      ' '.join([f + ':' for f in dstFields]))
     # Find the notes
     for note_id in mw.col.findNotes(search_str):
         addKanji(mw.col.getNote(note_id))
