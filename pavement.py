@@ -28,7 +28,7 @@ import zipfile
 options(
     anki=Bunch(
         builddir=path('build') / 'anki_addon',
-        zip=path('dist') / 'KanjiColorizerAnkiAddon.zip'))
+        zip=path('dist') / 'KanjiColorizerAnkiAddon.ankiaddon'))
 
 
 setup(
@@ -83,6 +83,7 @@ def build_anki_addon(options):
     (path('anki') / 'kanji_colorizer.py').copy(options.anki.builddir)
     (path('anki') / 'config.md').copy(options.anki.builddir)
     (path('anki') / 'config.json').copy(options.anki.builddir)
+    (path('anki') / 'manifest.json').copy(options.anki.builddir)
     lib_path = path('build') / 'lib' / 'kanjicolorizer'
     lib_path.copytree(options.anki.builddir / 'kanjicolorizer')
 
