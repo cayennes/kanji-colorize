@@ -284,11 +284,11 @@ class KanjiColorizer:
         self._parser.add_argument('-o', '--output-directory',
                     default='colorized-kanji')
         self._parser.add_argument('--grid', default='none', type=str,
-                    choices=['none', '4', '8', 'diag', 'diag4', 'diag8'],
-                    help='none: no grid is drawn. 4: a 2x2 grid is drawn. '
-                        '8: a 4x4 grid is drawn. diag: diagonals are drawn. '
-                        'diag4: a 2x2 grid with diagonals is drawn. '
-                        'diag8: a 4x4 grid with diagonals is drawn. '
+                    choices=['none', '2x2', '4x4', 'diag', '2x2diag', '4x4diag'],
+                    help='none: no grid is drawn. 2x2: a 2x2 grid is drawn. '
+                        '4x4: a 4x4 grid is drawn. diag: diagonals are drawn. '
+                        '2x2diag: a 2x2 grid with diagonals is drawn. '
+                        '4x4diag: a 4x4 grid with diagonals is drawn. '
                         '(default: ' '%(default)s)')
 
     # Public methods
@@ -550,7 +550,7 @@ class KanjiColorizer:
         The grid does not need rescaling.
 
         >>> svg = '<svg xmlns="http://www.w3.org/2000/svg" width="109" height="109" viewBox="0 0 109 109">\\n'
-        >>> kc = KanjiColorizer('--grid 4')
+        >>> kc = KanjiColorizer('--grid 2x2')
         >>> kc._add_grid(svg)
         '<svg xmlns="http://www.w3.org/2000/svg" width="109" height="109" viewBox="0 0 109 109">\\n<g id="kvg:grid" stroke="grey">\\n\\t<path id="kvg:grid-4h" d="M0,163.5H327"/>\\n\\t<path id="kvg:grid-4v" d="M163.5,0V327"/>\\n</g>\\n'
         >>> svg = '<svg xmlns="http://www.w3.org/2000/svg" width="109" height="109" viewBox="0 0 109 109">\\n'
@@ -559,10 +559,10 @@ class KanjiColorizer:
         '<svg xmlns="http://www.w3.org/2000/svg" width="109" height="109" viewBox="0 0 109 109">\\n<g id="kvg:grid" stroke="grey">\\n\\t<path id="kvg:grid-d1" d="M0,0L109,109"/>\\n\\t<path id="kvg:grid-d1" d="M0,109L109,0"/>\\n</g>\\n'
         """
         grid = '<g id="kvg:grid" stroke="grey">\n'
-        if "4" in self.settings.grid or "8" in self.settings.grid:
+        if "2x2" in self.settings.grid or "4x4" in self.settings.grid:
             grid = grid + '\t<path id="kvg:grid-4h" d="M0,' + str(self.settings.image_size/2) + 'H' + str(self.settings.image_size) + '"/>\n'
             grid = grid + '\t<path id="kvg:grid-4v" d="M' + str(self.settings.image_size/2) + ',0V' + str(self.settings.image_size) + '"/>\n'
-        if "8" in self.settings.grid:
+        if "4x4" in self.settings.grid:
             grid = grid + '\t<path id="kvg:grid-4h1" d="M0,' + str(self.settings.image_size/4) + 'H' + str(self.settings.image_size) + '"/>\n'
             grid = grid + '\t<path id="kvg:grid-4h2" d="M0,' + str(self.settings.image_size*3/4) + 'H' + str(self.settings.image_size) + '"/>\n'
             grid = grid + '\t<path id="kvg:grid-4v1" d="M' + str(self.settings.image_size/4) + ',0V' + str(self.settings.image_size) + '"/>\n'
