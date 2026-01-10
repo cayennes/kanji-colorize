@@ -102,7 +102,7 @@ class KanjiVG(object):
         >>> k = KanjiVG('Л')
         Traceback (most recent call last):
             ...
-        kanjicolorizer.colorizer.InvalidCharacterError: ('\\u041b', '')
+        InvalidCharacterError: ('\\u041b', '')
 
         '''
         self.character = character
