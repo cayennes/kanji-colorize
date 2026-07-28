@@ -90,20 +90,19 @@ Activate the virtual environment and install requirements:
 
     $ python3 -m venv venv
     $ source venv/bin/activate
-    $ pip install -r requirements.txt
+    (venv) $ pip install -r requirements.txt
 
 To run the existing tests:
 
 .. code:: bash
 
-    $ python -m kanjicolorizer.colorizer
-    $ python -m unittest discover -s kanjicolorizer
+    (venv) $ py.test
 
 To create a new release:
 
 .. code :: bash
 
-    $ paver dist_anki_addon
+    (venv) $ paver dist_anki_addon
 
 Test by unzipping the zip file in `dist` into a new directory in `~/.local/share/Anki2/addons21` (or the equivalent for the OS being tested).
 
