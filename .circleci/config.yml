@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/python:3.6.6-stretch
+      - image: cimg/python:3.14.6
     steps:
       - checkout
       - run: git submodule sync
