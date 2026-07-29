@@ -44,6 +44,7 @@ from aqt.utils import showInfo, askUser
 from aqt.qt import *
 from .kanjicolorizer.colorizer import (KanjiVG, KanjiColorizer,
                                       InvalidCharacterError)
+import copy
 
 # Configuration
 
@@ -72,9 +73,9 @@ default_config = {
 configs = []
 
 # avoid errors due to invalid config
-if 'model' in addon_config and type(addon_config['model']) is list: # multiple models specified
+if 'model' in addon_config and type(addon_config['model']) is list:  # multiple models specified
     for model in addon_config['model']:
-        new_model_config = default_config.copy()
+        new_model_config = copy.deepcopy(default_config)
         if 'name' in model and type(model['name']) is str:
             new_model_config["modelNameSubstring"] = model["name"].lower()
         else:
@@ -89,7 +90,7 @@ if 'model' in addon_config and type(addon_config['model']) is list: # multiple m
             model["overwrite"] = model['overwrite-dest']
         configs.append(new_model_config)
 else: # only one model
-    configs.append(default_config.copy())
+    configs.append(copy.deepcopy(default_config))
     if 'model' in addon_config and type(addon_config['model']) is str:
         configs[0]["modelNameSubstring"] = addon_config['model'].lower()
     if 'src-field' in addon_config and type(addon_config['src-field']) is str:
@@ -103,22 +104,6 @@ else: # only one model
 
 kc = KanjiColorizer(config)
 
-
-# def modelIsCorrectType(model):
-#     '''
-#     Returns True if model has Japanese/a model name
-#     specified in the config in the name and has both srcField
-#     and dstField; otherwise returns False
-#     '''
-#     # Does the model name have Japanese in it?
-#     model_name = model['name'].lower()
-#     fields = mw.col.models.fieldNames(model)
-#     return any(
-#         model_conf["modelNameSubstring"] in model_name and
-#         model_conf["srcField"] in fields and
-#         any(field for field in model_conf["dstFields"] if field in fields)
-#         for model_conf in configs
-#     )
 
 def getModelType(model):
     '''
