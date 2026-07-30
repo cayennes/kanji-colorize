@@ -5,7 +5,7 @@
 * `value`: a decimal indicating value where 0 is black and 1 is colored or white (default: `0.75`)
 * `image-size`: image size in pixels; they're square so this will be both height and width (default: `327`)
 * `group-mode`: Somewhat buggy option to color groups of kanji instead of strokes. (default: `false`)
-* `model`: name of the model containing kanji and diagram fields
+* `model`: name of the model containing kanji and diagram fields. Can be an array of objects containing `name`, `src-field`, and `dst-field` and `overwrite-dest` to specify multiple models.
 * `src-field`: name of the field that contains the kanji
 * `dst-field`: name of the field to save diagram to. Can be an array of names, in which case one diagram will be written to each destination, and the leftover characters will be written to the last destination.
 * `diagrammed-characters`: which characters from the source field to produce diagrams for:

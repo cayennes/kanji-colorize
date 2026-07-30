@@ -44,6 +44,7 @@ from aqt.utils import showInfo, askUser
 from aqt.qt import *
 from .kanjicolorizer.colorizer import (KanjiVG, KanjiColorizer,
                                       InvalidCharacterError)
+import copy
 
 # Configuration
 
@@ -62,38 +63,64 @@ config += str(addon_config["image-size"])
 config += " --grid "
 config += addon_config["grid"]
 
-modelNameSubstring = 'japanese'
-srcField           = 'Kanji'
-dstFields           = ['Diagram']
-overwrite          = True
+default_config = {
+    "modelNameSubstring": "japanese",
+    "srcField": "Kanji",
+    "dstFields": ["Diagram"],
+    "overwrite": True
+}
+
+configs = []
 
 # avoid errors due to invalid config
-if 'model' in addon_config and type(addon_config['model']) is str:
-    modelNameSubstring = addon_config['model'].lower()
-if 'src-field' in addon_config and type(addon_config['src-field']) is str:
-    srcField = addon_config['src-field']
-if 'dst-field' in addon_config and type(addon_config['dst-field']) is str:
-    dstFields = [addon_config['dst-field']]
-if 'dst-field' in addon_config and type(addon_config['dst-field']) is list:
-    dstFields = addon_config['dst-field']
-if 'overwrite-dest' in addon_config and type(addon_config['overwrite-dest']) is bool:
-    overwrite = addon_config['overwrite-dest']
+if 'model' in addon_config and type(addon_config['model']) is list:  # multiple models specified
+    for model in addon_config['model']:
+        new_model_config = copy.deepcopy(default_config)
+        if 'name' in model and type(model['name']) is str:
+            new_model_config["modelNameSubstring"] = model["name"].lower()
+        else:
+            continue
+        if 'src-field' in model and type(model['src-field']) is str:
+            new_model_config["srcField"] = model['src-field']
+        if 'dst-field' in model and type(model['dst-field']) is str:
+            new_model_config["dstFields"] = [model['dst-field']]
+        if 'dst-field' in model and type(model['dst-field']) is list:
+            new_model_config["dstFields"] = model['dst-field']
+        if 'overwrite-dest' in model and type(model['overwrite-dest']) is bool:
+            new_model_config["overwrite"] = model['overwrite-dest']
+        configs.append(new_model_config)
+else: # only one model
+    configs.append(copy.deepcopy(default_config))
+    if 'model' in addon_config and type(addon_config['model']) is str:
+        configs[0]["modelNameSubstring"] = addon_config['model'].lower()
+    if 'src-field' in addon_config and type(addon_config['src-field']) is str:
+        configs[0]["srcField"] = addon_config['src-field']
+    if 'dst-field' in addon_config and type(addon_config['dst-field']) is str:
+        configs[0]["dstFields"] = [addon_config['dst-field']]
+    if 'dst-field' in addon_config and type(addon_config['dst-field']) is list:
+        configs[0]["dstFields"] = addon_config['dst-field']
+    if 'overwrite-dest' in addon_config and type(addon_config['overwrite-dest']) is bool:
+        configs[0]["overwrite"] = addon_config['overwrite-dest']
 
 kc = KanjiColorizer(config)
 
 
-def modelIsCorrectType(model):
+def getModelType(model):
     '''
-    Returns True if model has Japanese in the name and has both srcField
-    and dstField; otherwise returns False
+    Returns the index in configs if model has a valid model name and has both srcField
+    and dstField; otherwise returns None
     '''
-    # Does the model name have Japanese in it?
     model_name = model['name'].lower()
     fields = mw.col.models.fieldNames(model)
-    any_destination_field_exist = any(field for field in dstFields if field in fields)
-    return (modelNameSubstring in model_name and
-                         srcField in fields and
-                         any_destination_field_exist)
+    modelidx = None
+    for i, model_conf in enumerate(configs):
+        if (model_conf["modelNameSubstring"] in model_name and
+            model_conf["srcField"] in fields and
+                any(field for field in model_conf["dstFields"] if field in fields)):
+            modelidx = i
+            break
+    return modelidx
+
 
 def is_kanji(c):
     '''
@@ -125,16 +152,17 @@ def addKanji(note, flag=False, currentFieldIndex=None):
     '''
     Checks to see if a kanji should be added, and adds it if so.
     '''
-    if not modelIsCorrectType(note.model()):
+    modelidx = getModelType(note.model())
+    if modelidx is None:
         return flag
 
-    if currentFieldIndex != None: # We've left a field
+    if currentFieldIndex != None:  # We've left a field
         # But it isn't the relevant one
-        if note.model()['flds'][currentFieldIndex]['name'] != srcField:
+        if note.model()['flds'][currentFieldIndex]['name'] != configs[modelidx]["srcField"]:
             return flag
 
-    srcTxt = mw.col.media.strip(note[srcField])
-    existingDstFields = [field for field in dstFields if field in mw.col.models.fieldNames(note.model())]
+    srcTxt = mw.col.media.strip(note[configs[modelidx]["srcField"]])
+    existingDstFields = [field for field in configs[modelidx]["dstFields"] if field in mw.col.models.fieldNames(note.model())]
 
     note_edited = False
     characters = characters_to_colorize(str(srcTxt))
@@ -155,7 +183,7 @@ def addKanji(note, flag=False, currentFieldIndex=None):
         anki_fname = mw.col.media.writeData(filename, char_svg)
         dst += '<img src="{!s}">'.format(anki_fname)
 
-        if oldDst != '' and not overwrite:
+        if oldDst != '' and not configs[modelidx]["overwrite"]:
             continue
 
         if dst != oldDst and dst != '':
@@ -167,7 +195,7 @@ def addKanji(note, flag=False, currentFieldIndex=None):
 
     # Put leftover characters in the last destination. However if it isn't empty and overwrite is false,
     # don't write any characters to it.
-    if len(characters) > len(existingDstFields) and (last_destination_field_contents == '' or overwrite):
+    if len(characters) > len(existingDstFields) and (last_destination_field_contents == '' or configs[modelidx]["overwrite"]):
         dstField = existingDstFields[-1]
         oldDst = note[dstField]
         dst = note[dstField]
@@ -198,6 +226,7 @@ def addKanji(note, flag=False, currentFieldIndex=None):
 def onFocusLost(flag, note, currentFieldIndex):
     return addKanji(note, flag, currentFieldIndex)
 
+
 addHook('editFocusLost', onFocusLost)
 
 
@@ -210,7 +239,7 @@ def regenerate_all():
                    'This may take some time and will overwrite the '
                    'destination Diagram field(s).'):
         return
-    models = [m for m in mw.col.models.all() if modelIsCorrectType(m)]
+    models = [m for m in mw.col.models.all() if getModelType(m) is not None]
     # Find the notes in those models and give them kanji
     for model in models:
         for nid in mw.col.models.nids(model):
@@ -219,19 +248,31 @@ def regenerate_all():
 
 def generate_for_new():
     if not askUser("This option will generate diagrams for notes with "
-                   "empty {} field(s) only."
-                   "Proceed?".format(', '.join(dstFields))):
+                   "empty destination field(s) only."
+                   "Proceed?"):
         return
-    model_ids = [mid for mid in mw.col.models.ids() if modelIsCorrectType(mw.col.models.get(mid))]
-    if not model_ids:
+
+    models = []
+    for mid in mw.col.models.ids():
+        modelidx = getModelType(mw.col.models.get(mid))
+        if modelidx is not None:
+            models.append((mid, modelidx))
+
+    if not models:
         showInfo("Can not find any relevant models. Make sure model, src-field, and dst-field are set correctly in your config.")
         return
     # Generate search string in the format
-    #    (mid:123 or mid:456) Kanji:_* Diagram:
-    search_str = '({}) {}:_* {}'.format(
-      ' or '.join(('mid:'+str(mid) for mid in model_ids)),
-      srcField,
-      ' '.join([f + ':' for f in dstFields]))
+    #    ("mid:123" "Kanji:_*" "Diagram:") or ("mid:456" "Kanji:_*" "Diagram:")
+    parts = []
+    for model_id, modelidx in models:
+        model_conf = configs[modelidx]
+
+        dst = " ".join(f'"{field}:"' for field in model_conf["dstFields"])
+
+        parts.append(f'("mid:{model_id}" "{model_conf["srcField"]}:_*" {dst})')
+
+    search_str = " or ".join(parts)
+
     # Find the notes
     for note_id in mw.col.findNotes(search_str):
         addKanji(mw.col.getNote(note_id))
