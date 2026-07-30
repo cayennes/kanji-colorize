@@ -87,7 +87,7 @@ if 'model' in addon_config and type(addon_config['model']) is list:  # multiple 
         if 'dst-field' in model and type(model['dst-field']) is list:
             new_model_config["dstFields"] = model['dst-field']
         if 'overwrite-dest' in model and type(model['overwrite-dest']) is bool:
-            model["overwrite"] = model['overwrite-dest']
+            new_model_config["overwrite"] = model['overwrite-dest']
         configs.append(new_model_config)
 else: # only one model
     configs.append(copy.deepcopy(default_config))
@@ -269,7 +269,8 @@ def generate_for_new():
 
         dst = " ".join(f'"{field}:"' for field in model_conf["dstFields"])
 
-        parts.append(f'("mid:{model_id}" "{model_conf['srcField']}:_*" {dst})')
+        parts.append(f'("mid:{model_id}" "{model_conf["srcField"]}:_*" {dst})')
+
     search_str = " or ".join(parts)
 
     # Find the notes
